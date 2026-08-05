@@ -89,7 +89,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${display.variable} ${sans.variable}`}>
-      <body className="min-h-dvh antialiased bg-background text-foreground font-sans">
+      <body className="min-h-dvh overflow-x-clip antialiased bg-background text-foreground font-sans">
         {children}
       </body>
     </html>

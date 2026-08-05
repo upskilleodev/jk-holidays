@@ -38,8 +38,8 @@ export function PlansCoverflow({ packages }: { packages: PackageCardData[] }) {
   };
 
   return (
-    <div className="md:hidden">
-      <div className="relative mx-auto w-full max-w-sm select-none">
+    <div className="w-full overflow-x-clip md:hidden">
+      <div className="relative mx-auto w-full max-w-sm select-none overflow-x-clip px-1">
         <div className="relative min-h-[520px] overflow-hidden pb-2">
           {packages.map((pkg, index) => {
             const offset = index - active;
@@ -65,12 +65,12 @@ export function PlansCoverflow({ packages }: { packages: PackageCardData[] }) {
                     setActive(index);
                   }
                 }}
-                className="absolute inset-x-0 top-0 mx-auto transition-all duration-500 ease-out"
+                className="absolute inset-x-0 top-0 mx-auto will-change-transform transition-all duration-500 ease-out"
                 style={{
                   transform:
                     offset === 0
-                      ? "translateX(0) scale(1)"
-                      : `translateX(${offset * 78}%) scale(0.85)`,
+                      ? "translate3d(0,0,0) scale(1)"
+                      : `translate3d(${offset * 62}%,0,0) scale(0.88)`,
                   opacity: offset === 0 ? 1 : 0.35,
                   zIndex: offset === 0 ? 30 : 10,
                 }}

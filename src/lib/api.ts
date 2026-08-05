@@ -16,6 +16,27 @@ export function handleRouteError(error: unknown) {
     if (error.message === "FORBIDDEN") {
       return jsonError("Admin access required", 403);
     }
+    if (
+      error.message.includes("JWT_SECRET") ||
+      error.message.includes("MONGODB_URI")
+    ) {
+      console.error(error);
+      return jsonError(
+        "Server misconfigured. Set JWT_SECRET and MONGODB_URI in Vercel env vars.",
+        500,
+      );
+    }
+    if (
+      /timed out|ECONNREFUSED|Server selection|MongoNetwork/i.test(
+        error.message,
+      )
+    ) {
+      console.error(error);
+      return jsonError(
+        "Database unavailable. Check MongoDB URI and Atlas network access.",
+        500,
+      );
+    }
   }
   console.error(error);
   return jsonError("Something went wrong", 500);

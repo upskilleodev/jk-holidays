@@ -7,7 +7,7 @@ export async function SiteShell({ children }: { children: React.ReactNode }) {
   const session = await getSession();
 
   return (
-    <div className="flex min-h-dvh flex-col">
+    <div className="flex min-h-dvh flex-col overflow-x-clip">
       <Navbar
         user={
           session
@@ -15,7 +15,9 @@ export async function SiteShell({ children }: { children: React.ReactNode }) {
             : null
         }
       />
-      <main className="flex-1 pb-24 sm:pb-20">{children}</main>
+      <main className="min-w-0 flex-1 overflow-x-clip pb-24 sm:pb-20">
+        {children}
+      </main>
       <Footer />
       <WhatsAppFab />
     </div>

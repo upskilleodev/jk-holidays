@@ -54,9 +54,9 @@ export function Navbar({ user }: Props) {
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-navy-gradient text-white shadow-md safe-top">
-        <div className="mx-auto flex h-16 sm:h-20 max-w-7xl items-center justify-between gap-6 px-4">
-          <Link href="/" onClick={() => setOpen(false)}>
+      <header className="sticky top-0 z-40 overflow-x-clip bg-navy-gradient text-white shadow-md safe-top">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:h-20 sm:gap-6">
+          <Link href="/" onClick={() => setOpen(false)} className="min-w-0">
             <Logo />
           </Link>
 

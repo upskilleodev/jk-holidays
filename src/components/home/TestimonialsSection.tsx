@@ -31,21 +31,21 @@ export function TestimonialsSection() {
     <section id="testimonials" className="mx-auto max-w-7xl px-4 py-16">
       <SectionHeading eyebrow="Why Members Love JK Holidays" align="left" />
 
-      <div className="mt-8 md:hidden">
-        <div className="relative mx-auto w-full max-w-sm select-none">
-          <div className="relative h-[280px]">
+      <div className="mt-8 overflow-x-clip md:hidden">
+        <div className="relative mx-auto w-full max-w-sm select-none overflow-x-clip">
+          <div className="relative h-[280px] overflow-hidden">
             {testimonials.map((item, index) => {
               const offset = index - active;
               if (Math.abs(offset) > 1) return null;
               return (
                 <div
                   key={item.name}
-                  className="absolute inset-0 mx-3 transition-all duration-500 ease-out"
+                  className="absolute inset-0 mx-3 will-change-transform transition-all duration-500 ease-out"
                   style={{
                     transform:
                       offset === 0
-                        ? "translateX(0%) scale(1)"
-                        : `translateX(${offset * 80}%) scale(0.88)`,
+                        ? "translate3d(0,0,0) scale(1)"
+                        : `translate3d(${offset * 62}%,0,0) scale(0.9)`,
                     opacity: offset === 0 ? 1 : 0.3,
                     zIndex: offset === 0 ? 20 : 10,
                   }}

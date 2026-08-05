@@ -7,15 +7,18 @@ import { PlansCoverflow } from "@/components/packages/PlansCoverflow";
 
 export function PackagesSection({ packages }: { packages: PackageCardData[] }) {
   return (
-    <section id="plans" className="bg-navy-gradient py-16 text-white">
+    <section
+      id="plans"
+      className="overflow-x-clip bg-navy-gradient py-16 text-white"
+    >
       <div className="mx-auto max-w-7xl px-4">
         <div className="text-center">
-          <div className="text-xs font-bold tracking-[0.3em] text-gold">
-            ━━ OUR MEMBERSHIP PLANS ━━
+          <div className="px-1 text-[10px] font-bold tracking-[0.18em] text-gold sm:text-xs sm:tracking-[0.3em]">
+            OUR MEMBERSHIP PLANS
           </div>
         </div>
 
-        <div className="mt-8">
+        <div className="mt-8 overflow-x-clip">
           <PlansCoverflow packages={packages} />
         </div>
 

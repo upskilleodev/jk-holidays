@@ -120,6 +120,8 @@
   html {
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
+    overflow-x: clip;
+    max-width: 100%;
   }
   body {
     background-color: var(--background);
@@ -127,8 +129,7 @@
     font-family: var(--font-body), system-ui, sans-serif;
     min-height: 100dvh;
     max-width: 100%;
-    /* clip avoids creating a second scroll container (hidden on html+body
-       with height:100% can lock vertical page scroll) */
+    /* clip (not hidden) keeps vertical page scroll while blocking sideways bleed */
     overflow-x: clip;
   }
   button,
