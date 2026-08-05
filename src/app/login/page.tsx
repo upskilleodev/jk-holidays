@@ -1,16 +1,14 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Suspense } from "react";
 import {
   Briefcase,
   Gift,
   Headphones,
   Layout,
   Tag,
-  User,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
-import { AuthForm } from "@/components/auth/AuthForm";
+import { LoginPanel } from "@/components/auth/LoginPanel";
 
 export const metadata = {
   title: "Membership Login",
@@ -98,24 +96,7 @@ export default function LoginPage() {
           </div>
 
           <div className="flex items-start justify-center lg:pt-6">
-            <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl">
-              <div className="text-center">
-                <div className="mx-auto grid h-14 w-14 place-items-center rounded-full border-2 border-gold text-gold">
-                  <User className="h-6 w-6" />
-                </div>
-                <h2 className="mt-4 font-display text-2xl font-bold text-navy">
-                  MEMBERSHIP LOGIN
-                </h2>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Login to access your account
-                </p>
-              </div>
-              <div className="mt-6">
-                <Suspense fallback={<div className="text-sm">Loading...</div>}>
-                  <AuthForm mode="login" />
-                </Suspense>
-              </div>
-            </div>
+            <LoginPanel />
           </div>
         </div>
       </div>

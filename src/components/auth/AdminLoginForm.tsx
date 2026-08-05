@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { Eye, EyeOff, Lock, User } from "lucide-react";
 
-export function AdminLoginForm() {
+export function AdminLoginForm({ embedded = false }: { embedded?: boolean }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -48,13 +48,13 @@ export function AdminLoginForm() {
       <div>
         <label className="text-sm font-semibold text-navy">Admin Email</label>
         <div className="relative mt-1">
-          <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <User className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             name="email"
             type="email"
             required
             placeholder="Admin email"
-            className="input-field h-11 pl-9"
+            className="input-field input-with-icon"
             autoComplete="username"
           />
         </div>
@@ -62,20 +62,20 @@ export function AdminLoginForm() {
       <div>
         <label className="text-sm font-semibold text-navy">Password</label>
         <div className="relative mt-1">
-          <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Lock className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             name="password"
             type={show ? "text" : "password"}
             required
             minLength={6}
             placeholder="Password"
-            className="input-field h-11 pl-9 pr-10"
+            className="input-field input-with-icon input-with-icon-end"
             autoComplete="current-password"
           />
           <button
             type="button"
             onClick={() => setShow((v) => !v)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+            className="absolute right-0 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center text-muted-foreground"
             aria-label="Toggle password"
           >
             {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -86,15 +86,17 @@ export function AdminLoginForm() {
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
 
       <button type="submit" disabled={loading} className="btn-primary h-12 w-full">
-        {loading ? "Signing in..." : "Admin Login"}
+        {loading ? "Signing in..." : "Login"}
       </button>
 
-      <p className="text-center text-sm text-muted-foreground">
-        Member account?{" "}
-        <Link href="/login" className="font-semibold text-blue-600">
-          Go to member login
-        </Link>
-      </p>
+      {embedded ? null : (
+        <p className="text-center text-sm text-muted-foreground">
+          Member account?{" "}
+          <Link href="/login" className="font-semibold text-blue-600">
+            Go to member login
+          </Link>
+        </p>
+      )}
     </form>
   );
 }

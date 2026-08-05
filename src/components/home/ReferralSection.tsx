@@ -27,7 +27,9 @@ export function ReferralSection() {
                 <div className="grid h-12 w-12 place-items-center rounded-full border border-gold/50 text-gold">
                   <Icon className="h-5 w-5" />
                 </div>
-                <div className="max-w-16">{step.label}</div>
+                <div className="max-w-24 text-left leading-snug sm:max-w-none">
+                  {step.label}
+                </div>
                 {index < steps.length - 1 ? (
                   <ArrowRight className="h-4 w-4 text-gold" />
                 ) : null}

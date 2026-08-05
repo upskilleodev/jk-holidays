@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, CalendarCheck, Play } from "lucide-react";
+import { ArrowRight, CalendarCheck } from "lucide-react";
 
 export function Hero() {
   return (
@@ -38,15 +38,6 @@ export function Hero() {
             </Link>
           </div>
         </div>
-        <button
-          type="button"
-          className="absolute bottom-8 right-8 hidden items-center gap-2 rounded-full bg-white/10 px-4 py-2 backdrop-blur hover:bg-white/20 md:flex"
-        >
-          <span className="grid h-9 w-9 place-items-center rounded-full bg-white text-navy">
-            <Play className="h-4 w-4 fill-current" />
-          </span>
-          <span className="text-sm font-semibold">Watch Video</span>
-        </button>
       </div>
     </section>
   );

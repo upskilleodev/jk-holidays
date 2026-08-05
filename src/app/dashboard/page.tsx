@@ -55,7 +55,10 @@ export default async function DashboardPage() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <div className="rounded-xl border bg-white p-6 shadow-sm">
+        <div
+          id="membership"
+          className="scroll-mt-24 rounded-xl border bg-white p-6 shadow-sm"
+        >
           <div className="text-xs font-bold tracking-widest text-muted-foreground uppercase">
             Your purchase
           </div>
@@ -104,7 +107,10 @@ export default async function DashboardPage() {
           )}
         </div>
 
-        <div className="rounded-xl border bg-white p-6 shadow-sm">
+        <div
+          id="referral"
+          className="scroll-mt-24 rounded-xl border bg-white p-6 shadow-sm"
+        >
           <div className="text-xs font-bold tracking-widest text-muted-foreground uppercase">
             Referral program
           </div>

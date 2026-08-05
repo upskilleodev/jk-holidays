@@ -18,11 +18,13 @@ export function CashbackSettingsForm({ initial }: Props) {
   const [isActive, setIsActive] = useState(initial.isActive);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     setLoading(true);
     setMessage("");
+    setError("");
     const res = await fetch("/api/admin/cashback", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -30,7 +32,7 @@ export function CashbackSettingsForm({ initial }: Props) {
     });
     setLoading(false);
     if (!res.ok) {
-      setMessage("Unable to save settings");
+      setError("Unable to save settings");
       return;
     }
     setMessage("Cashback settings saved");
@@ -75,6 +77,7 @@ export function CashbackSettingsForm({ initial }: Props) {
         />
         Cashback program active
       </label>
+      {error ? <p className="text-sm text-danger">{error}</p> : null}
       {message ? <p className="text-sm text-success">{message}</p> : null}
       <button type="submit" disabled={loading} className="btn-dark w-full">
         {loading ? "Saving..." : "Save settings"}

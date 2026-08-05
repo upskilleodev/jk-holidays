@@ -40,21 +40,32 @@ export function PlansCoverflow({ packages }: { packages: PackageCardData[] }) {
   return (
     <div className="md:hidden">
       <div className="relative mx-auto w-full max-w-sm select-none">
-        <div className="relative h-[560px] overflow-hidden">
+        <div className="relative min-h-[520px] overflow-hidden pb-2">
           {packages.map((pkg, index) => {
             const offset = index - active;
             if (Math.abs(offset) > 1) return null;
             const years = validityYears(pkg.validity);
 
             return (
-              <button
+              <div
                 key={pkg._id}
-                type="button"
-                aria-label={`Show ${planLabel(pkg.title)} plan`}
+                role={offset !== 0 ? "button" : undefined}
+                tabIndex={offset !== 0 ? 0 : undefined}
+                aria-label={
+                  offset !== 0
+                    ? `Show ${planLabel(pkg.title)} plan`
+                    : undefined
+                }
                 onClick={() => {
                   if (offset !== 0) setActive(index);
                 }}
-                className="absolute inset-0 mx-auto block transition-all duration-500 ease-out"
+                onKeyDown={(e) => {
+                  if (offset !== 0 && (e.key === "Enter" || e.key === " ")) {
+                    e.preventDefault();
+                    setActive(index);
+                  }
+                }}
+                className="absolute inset-x-0 top-0 mx-auto transition-all duration-500 ease-out"
                 style={{
                   transform:
                     offset === 0
@@ -114,14 +125,12 @@ export function PlansCoverflow({ packages }: { packages: PackageCardData[] }) {
                     <div className="mt-4 flex gap-2">
                       <Link
                         href={`/packages/${pkg.slug}?request=1`}
-                        onClick={(e) => e.stopPropagation()}
                         className="btn-primary !h-9 flex-1 !text-[10px] !px-2"
                       >
                         Join Now
                       </Link>
                       <Link
                         href={`/packages/${pkg.slug}`}
-                        onClick={(e) => e.stopPropagation()}
                         className="inline-flex flex-1 items-center justify-center rounded-md border border-gold/50 px-3 text-[10px] font-bold uppercase text-navy hover:bg-gold-soft"
                       >
                         Know More
@@ -129,7 +138,7 @@ export function PlansCoverflow({ packages }: { packages: PackageCardData[] }) {
                     </div>
                   </div>
                 </div>
-              </button>
+              </div>
             );
           })}
         </div>

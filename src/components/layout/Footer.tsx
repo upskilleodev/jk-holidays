@@ -13,17 +13,21 @@ const quickLinks = [
 
 const memberLinks = [
   { href: "/login", label: "Membership Login" },
-  { href: "/dashboard", label: "My Bookings" },
-  { href: "/signup", label: "Refer & Earn" },
-  { href: "/packages", label: "EMI Options" },
-  { href: "/contact", label: "FAQs" },
+  { href: "/signup", label: "Join Membership" },
+  { href: "/dashboard", label: "My Account" },
+  { href: "/packages", label: "Browse Plans" },
+  { href: "/login?tab=admin", label: "Admin Login" },
 ];
 
 const supportLinks = [
-  { href: "/contact", label: "Help Center" },
-  { href: "/contact", label: "Terms & Conditions" },
-  { href: "/contact", label: "Privacy Policy" },
-  { href: "/contact", label: "Cancellation Policy" },
+  { href: "/contact", label: "Book Presentation" },
+  { href: "/contact", label: "Help & Support" },
+];
+
+const social = [
+  { href: site.social.facebook, label: "f", name: "Facebook" },
+  { href: site.social.instagram, label: "i", name: "Instagram" },
+  { href: site.social.youtube, label: "y", name: "YouTube" },
 ];
 
 function FooterCol({
@@ -57,13 +61,17 @@ export function Footer() {
           <Logo />
           <p className="mt-4 text-sm">{site.description}</p>
           <div className="mt-4 flex gap-2">
-            {["f", "i", "y", "in"].map((s) => (
-              <span
-                key={s}
+            {social.map((s) => (
+              <a
+                key={s.name}
+                href={s.href}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={s.name}
                 className="grid h-9 w-9 place-items-center rounded-full border border-white/20 text-xs hover:border-gold hover:text-gold"
               >
-                {s}
-              </span>
+                {s.label}
+              </a>
             ))}
           </div>
         </div>
@@ -78,12 +86,6 @@ export function Footer() {
             <br />
             {site.email}
           </p>
-          <Link
-            href="/admin/login"
-            className="mt-3 inline-block text-xs text-white/40 hover:text-gold"
-          >
-            Admin login
-          </Link>
         </div>
       </div>
       <div className="border-t border-white/10 px-4 py-4 text-center text-xs text-white/60">

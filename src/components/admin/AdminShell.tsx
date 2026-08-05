@@ -15,6 +15,7 @@ import {
   X,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
+import { ProfileMenu } from "@/components/auth/ProfileMenu";
 import { cn } from "@/lib/utils";
 
 const links = [
@@ -30,13 +31,19 @@ function isActive(pathname: string, href: string, exact?: boolean) {
   return pathname.startsWith(href);
 }
 
-export function AdminShell({ children }: { children: React.ReactNode }) {
+export function AdminShell({
+  name,
+  children,
+}: {
+  name: string;
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
-    window.location.href = "/admin/login";
+    window.location.href = "/login?tab=admin";
   }
 
   const Sidebar = (
@@ -86,23 +93,35 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-16 items-center gap-3 border-b bg-white px-4 md:px-6">
-          <button
-            type="button"
-            className="lg:hidden"
-            onClick={() => setOpen(true)}
-            aria-label="Open admin menu"
-          >
-            <Menu className="h-5 w-5 text-navy" />
-          </button>
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-3 border-b bg-white px-4 md:px-6">
           <div className="text-sm font-semibold text-navy">Admin Console</div>
-          <Link
-            href="/"
-            className="ml-auto grid h-9 w-9 place-items-center rounded-full hover:bg-muted"
-            title="Go to website"
-          >
-            <ExternalLink className="h-4 w-4 text-navy" />
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/"
+              className="grid h-9 w-9 place-items-center rounded-full hover:bg-muted"
+              title="Go to website"
+            >
+              <ExternalLink className="h-4 w-4 text-navy" />
+            </Link>
+            <ProfileMenu
+              name={name}
+              subtitle="Admin"
+              redirectTo="/login?tab=admin"
+              variant="light"
+              links={[
+                { href: "/admin", label: "Dashboard" },
+                { href: "/admin/purchases", label: "Orders" },
+              ]}
+            />
+            <button
+              type="button"
+              className="inline-flex h-10 w-10 items-center justify-center lg:hidden"
+              onClick={() => setOpen(true)}
+              aria-label="Open admin menu"
+            >
+              <Menu className="h-5 w-5 text-navy" />
+            </button>
+          </div>
         </header>
 
         <main className="min-w-0 flex-1 bg-[oklch(0.97_0.01_260)] p-4 md:p-6">
@@ -118,10 +137,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             onClick={() => setOpen(false)}
             aria-label="Close overlay"
           />
-          <div className="absolute inset-y-0 left-0 w-72 bg-navy-deep text-white">
+          <div className="absolute inset-y-0 right-0 w-72 bg-navy-deep text-white shadow-xl">
             <button
               type="button"
-              className="absolute right-3 top-3 z-10"
+              className="absolute left-3 top-3 z-10"
               onClick={() => setOpen(false)}
               aria-label="Close menu"
             >

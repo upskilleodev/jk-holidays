@@ -53,7 +53,7 @@ export function TestimonialsSection() {
                   <div className="relative h-full rounded-3xl border border-gold/20 bg-white p-6 shadow-2xl">
                     <Quote className="absolute right-5 top-5 h-10 w-10 text-gold/20" />
                     <Stars />
-                    <p className="mt-3 text-sm italic leading-relaxed text-muted-foreground">
+                    <p className="mt-3 line-clamp-4 text-sm italic leading-relaxed text-muted-foreground">
                       &ldquo;{item.quote}&rdquo;
                     </p>
                     <div className="mt-6 flex items-center gap-3 border-t pt-4">

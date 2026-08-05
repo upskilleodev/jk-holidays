@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, Menu, Phone, X } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
+import { LogoutButton } from "@/components/auth/LogoutButton";
+import { ProfileMenu } from "@/components/auth/ProfileMenu";
 import { site } from "@/lib/site";
 
 const links = [
@@ -15,7 +17,6 @@ const links = [
 ];
 
 const membershipLinks = [
-  { href: "/packages", label: "All Plans" },
   { href: "/membership", label: "Membership" },
   { href: "/packages", label: "Browse Plans" },
 ];
@@ -95,7 +96,7 @@ export function Navbar({ user }: Props) {
             ))}
           </nav>
 
-          <div className="hidden items-center gap-4 md:flex">
+          <div className="hidden items-center gap-3 md:flex">
             <a
               href={`tel:${site.phone.replace(/\s/g, "")}`}
               className="hidden xl:flex items-center gap-2 text-sm"
@@ -105,14 +106,38 @@ export function Navbar({ user }: Props) {
               </span>
               {site.phone}
             </a>
-            {user?.role === "user" ? (
-              <Link href="/dashboard" className="btn-primary !h-9 !px-4">
-                My Account
-              </Link>
+            {user?.role === "admin" ? (
+              <ProfileMenu
+                name={user.name}
+                subtitle="Admin"
+                redirectTo="/login?tab=admin"
+                links={[
+                  { href: "/admin", label: "Admin Panel" },
+                  { href: "/", label: "View Website" },
+                ]}
+              />
+            ) : user?.role === "user" ? (
+              <ProfileMenu
+                name={user.name}
+                subtitle="Member"
+                redirectTo="/login"
+                links={[
+                  { href: "/dashboard", label: "My Account" },
+                  { href: "/packages", label: "Browse Plans" },
+                ]}
+              />
             ) : (
-              <Link href="/contact" className="btn-primary !h-9 !px-4">
-                Book Presentation
-              </Link>
+              <>
+                <Link
+                  href="/login"
+                  className="text-sm font-semibold uppercase tracking-wide hover:text-gold"
+                >
+                  Login
+                </Link>
+                <Link href="/contact" className="btn-primary !h-9 !px-4">
+                  Book Presentation
+                </Link>
+              </>
             )}
           </div>
 
@@ -166,15 +191,41 @@ export function Navbar({ user }: Props) {
               >
                 All Plans
               </Link>
-              <Link
-                href={user?.role === "user" ? "/dashboard" : "/login"}
-                className="min-h-12 flex items-center hover:text-gold"
-                onClick={() => setOpen(false)}
-              >
-                {user?.role === "user" ? "My Account" : "Member Login"}
-              </Link>
+              {user?.role === "admin" ? (
+                <Link
+                  href="/admin"
+                  className="min-h-12 flex items-center hover:text-gold"
+                  onClick={() => setOpen(false)}
+                >
+                  Admin Panel
+                </Link>
+              ) : user?.role === "user" ? (
+                <Link
+                  href="/dashboard"
+                  className="min-h-12 flex items-center hover:text-gold"
+                  onClick={() => setOpen(false)}
+                >
+                  My Account
+                </Link>
+              ) : (
+                <Link
+                  href="/login"
+                  className="min-h-12 flex items-center hover:text-gold"
+                  onClick={() => setOpen(false)}
+                >
+                  Member Login
+                </Link>
+              )}
             </nav>
-            <div className="mt-auto p-4 pb-8">
+            <div className="mt-auto space-y-3 p-4 pb-8">
+              {user ? (
+                <LogoutButton
+                  redirectTo={
+                    user.role === "admin" ? "/login?tab=admin" : "/login"
+                  }
+                  className="btn-ghost w-full"
+                />
+              ) : null}
               <Link
                 href="/contact"
                 className="btn-primary w-full"

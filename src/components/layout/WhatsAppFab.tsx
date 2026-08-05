@@ -40,11 +40,11 @@ export function WhatsAppFab() {
       href={`https://wa.me/${phone}`}
       target="_blank"
       rel="noreferrer"
-      className="fixed bottom-5 right-5 z-50 flex items-center gap-2 rounded-full bg-[#25D366] px-4 py-3 text-sm font-semibold text-white shadow-lg hover:bg-[#1ebe57]"
+      className="fixed bottom-5 right-5 z-40 flex items-center gap-2 rounded-full bg-[#25D366] p-3.5 text-sm font-semibold text-white shadow-lg hover:bg-[#1ebe57] sm:px-4 sm:py-3"
       aria-label="Chat on WhatsApp"
     >
       <WhatsAppIcon className="h-5 w-5 shrink-0" />
-      Chat on WhatsApp
+      <span className="hidden sm:inline">Chat on WhatsApp</span>
     </a>
   );
 }

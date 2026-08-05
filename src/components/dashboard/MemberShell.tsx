@@ -10,17 +10,17 @@ import {
   LogOut,
   Menu,
   Package,
-  Users,
   X,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
+import { ProfileMenu } from "@/components/auth/ProfileMenu";
 import { cn } from "@/lib/utils";
 
 const nav = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutGrid },
   { href: "/packages", label: "Browse Plans", icon: Package },
-  { href: "/packages", label: "My Membership", icon: Crown },
-  { href: "/signup", label: "Refer & Earn", icon: Users },
+  { href: "/dashboard#membership", label: "My Membership", icon: Crown },
+  { href: "/dashboard#referral", label: "Refer & Earn", icon: Gift },
 ];
 
 type Props = {
@@ -46,9 +46,11 @@ export function MemberShell({ name, referralCode, children }: Props) {
       <nav className="flex-1 overflow-y-auto px-3 py-4">
         {nav.map((item) => {
           const active =
-            item.href === "/dashboard"
+            item.label === "Dashboard"
               ? pathname === "/dashboard"
-              : pathname.startsWith(item.href) && item.label !== "Refer & Earn";
+              : item.label === "Browse Plans"
+                ? pathname.startsWith("/packages")
+                : false;
           const Icon = item.icon;
           return (
             <Link
@@ -105,14 +107,6 @@ export function MemberShell({ name, referralCode, children }: Props) {
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex h-16 items-center justify-between gap-3 border-b bg-navy-gradient px-4 text-white md:px-6">
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              className="lg:hidden"
-              onClick={() => setOpen(true)}
-              aria-label="Open menu"
-            >
-              <Menu className="h-5 w-5" />
-            </button>
             <div className="lg:hidden">
               <Logo />
             </div>
@@ -120,14 +114,24 @@ export function MemberShell({ name, referralCode, children }: Props) {
               Member Portal
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="grid h-9 w-9 place-items-center rounded-full bg-gold-gradient font-bold text-navy-deep">
-              {name.charAt(0)}
-            </div>
-            <div className="hidden text-xs leading-tight sm:block">
-              <div className="font-semibold">{name}</div>
-              <div className="text-white/70">Member</div>
-            </div>
+          <div className="flex items-center gap-2 sm:gap-3">
+            <ProfileMenu
+              name={name}
+              subtitle="Member"
+              redirectTo="/login"
+              links={[
+                { href: "/dashboard", label: "Dashboard" },
+                { href: "/packages", label: "Browse Plans" },
+              ]}
+            />
+            <button
+              type="button"
+              className="inline-flex h-10 w-10 items-center justify-center lg:hidden"
+              onClick={() => setOpen(true)}
+              aria-label="Open menu"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
           </div>
         </header>
 
@@ -144,10 +148,10 @@ export function MemberShell({ name, referralCode, children }: Props) {
             onClick={() => setOpen(false)}
             aria-label="Close overlay"
           />
-          <div className="absolute inset-y-0 left-0 w-72 bg-navy-deep text-white">
+          <div className="absolute inset-y-0 right-0 w-72 bg-navy-deep text-white shadow-xl">
             <button
               type="button"
-              className="absolute right-3 top-3"
+              className="absolute left-3 top-3"
               onClick={() => setOpen(false)}
               aria-label="Close menu"
             >

@@ -2,15 +2,29 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { LogOut } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-export function LogoutButton({ className }: { className?: string }) {
+type Props = {
+  className?: string;
+  redirectTo?: string;
+  label?: string;
+  iconOnly?: boolean;
+};
+
+export function LogoutButton({
+  className,
+  redirectTo = "/",
+  label = "Logout",
+  iconOnly = false,
+}: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   async function logout() {
     setLoading(true);
     await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/");
+    router.push(redirectTo);
     router.refresh();
   }
 
@@ -19,9 +33,17 @@ export function LogoutButton({ className }: { className?: string }) {
       type="button"
       onClick={logout}
       disabled={loading}
-      className={className || "btn-dark"}
+      aria-label={label}
+      title={label}
+      className={cn(
+        "inline-flex items-center justify-center gap-2 disabled:opacity-55",
+        className,
+      )}
     >
-      {loading ? "Signing out..." : "Logout"}
+      <LogOut className="h-4 w-4 shrink-0" />
+      {iconOnly ? null : (
+        <span>{loading ? "Signing out..." : label}</span>
+      )}
     </button>
   );
 }
