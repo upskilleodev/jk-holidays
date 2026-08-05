@@ -15,18 +15,42 @@ const sans = Inter({
   weight: ["400", "500", "600", "700"],
 });
 
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+function getAppUrl() {
+  const explicit = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "");
+  if (explicit) return explicit;
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  }
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  return "http://localhost:3000";
+}
+
+const appUrl = getAppUrl();
+const ogImageUrl = `${appUrl}/og.png`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
   title: {
-    default: `${site.name} — Premium Holiday Membership`,
+    default: site.title,
     template: `%s · ${site.name}`,
   },
   description: site.description,
   applicationName: site.name,
+  keywords: [
+    "JK Holidays",
+    "holiday membership",
+    "luxury travel",
+    "holiday packages India",
+    "resort membership",
+  ],
+  authors: [{ name: site.name }],
+  alternates: {
+    canonical: appUrl,
+  },
   openGraph: {
-    title: `${site.name} — Premium Holiday Membership`,
+    title: site.title,
     description: site.description,
     type: "website",
     siteName: site.name,
@@ -34,18 +58,20 @@ export const metadata: Metadata = {
     url: appUrl,
     images: [
       {
-        url: "/og.png",
+        url: ogImageUrl,
+        secureUrl: ogImageUrl,
         width: 1200,
         height: 630,
-        alt: `${site.name} — Travel More. Spend Less. Live Better.`,
+        type: "image/png",
+        alt: `${site.name} — ${site.tagline}`,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: `${site.name} — Premium Holiday Membership`,
+    title: site.title,
     description: site.description,
-    images: ["/og.png"],
+    images: [ogImageUrl],
   },
 };
 

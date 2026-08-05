@@ -2,8 +2,9 @@ export const site = {
   name: "JK Holidays",
   tagline: "Travel More. Spend Less. Live Better.",
   motto: "Memories ... for life",
+  title: "JK Holidays — Premium Holiday Membership",
   description:
-    "JK Holidays is a premium holiday membership brand offering affordable luxury holidays at exclusive member benefits.",
+    "Travel More. Spend Less. Live Better. JK Holidays offers premium holiday memberships with luxury resorts across India and international destinations.",
   email: "info@jkholidays.com",
   phone: "+91 90123 45678",
   address: "JK Holidays Pvt. Ltd.\nB-04, Sector 63, Noida,\nUttar Pradesh - 201301",
