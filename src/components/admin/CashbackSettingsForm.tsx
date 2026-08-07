@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "@/components/feedback/toast";
 
 type Props = {
   initial: {
@@ -33,9 +34,11 @@ export function CashbackSettingsForm({ initial }: Props) {
     setLoading(false);
     if (!res.ok) {
       setError("Unable to save settings");
+      toast("Unable to save settings", "error");
       return;
     }
     setMessage("Cashback settings saved");
+    toast("Cashback settings saved", "success");
     router.refresh();
   }
 

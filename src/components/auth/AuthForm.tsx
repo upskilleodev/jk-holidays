@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { Eye, EyeOff, Lock, User } from "lucide-react";
+import { startNavigation, toast } from "@/components/feedback/toast";
 
 type Mode = "login" | "signup";
 
@@ -43,10 +44,17 @@ export function AuthForm({ mode }: { mode: Mode }) {
     setLoading(false);
 
     if (!res.ok) {
-      setError(data.error || "Something went wrong");
+      const message = data.error || "Something went wrong";
+      setError(message);
+      toast(message, "error");
       return;
     }
 
+    toast(
+      mode === "signup" ? "Account created. Welcome!" : "Signed in successfully",
+      "success",
+    );
+    startNavigation(mode === "signup" ? "Opening dashboard…" : "Taking you in…");
     if (data.user?.role === "admin") {
       router.push("/admin");
     } else {

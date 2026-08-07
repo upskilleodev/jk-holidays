@@ -4,26 +4,66 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
+  ArrowDownToLine,
+  BarChart3,
+  Bell,
+  Building2,
+  CalendarCheck,
+  Crown,
   ExternalLink,
-  Gift,
   LayoutDashboard,
+  LifeBuoy,
   LogOut,
   Menu,
-  Package,
-  ShoppingBag,
+  Plane,
+  Settings,
+  ShieldCheck,
   Users,
+  Wallet,
   X,
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { ProfileMenu } from "@/components/auth/ProfileMenu";
+import { startNavigation, toast } from "@/components/feedback/toast";
 import { cn } from "@/lib/utils";
 
-const links = [
+type BadgeKey = "requests" | "notifications" | "tickets";
+
+const links: {
+  href: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  exact?: boolean;
+  badgeKey?: BadgeKey;
+}[] = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { href: "/admin/packages", label: "Membership Plans", icon: Package },
-  { href: "/admin/purchases", label: "Orders", icon: ShoppingBag },
   { href: "/admin/users", label: "Members", icon: Users },
-  { href: "/admin/referrals", label: "Cashback", icon: Gift },
+  { href: "/admin/packages", label: "Membership Plans", icon: Crown },
+  {
+    href: "/admin/purchases",
+    label: "Holiday Requests",
+    icon: Plane,
+    badgeKey: "requests",
+  },
+  { href: "/admin/bookings", label: "Bookings", icon: CalendarCheck },
+  { href: "/admin/resorts", label: "Resorts", icon: Building2 },
+  { href: "/admin/wallet", label: "Wallet & Transactions", icon: Wallet },
+  { href: "/admin/withdrawals", label: "Withdrawals", icon: ArrowDownToLine },
+  { href: "/admin/reports", label: "Reports", icon: BarChart3 },
+  {
+    href: "/admin/notifications",
+    label: "Notifications",
+    icon: Bell,
+    badgeKey: "notifications",
+  },
+  { href: "/admin/roles", label: "Admins & Roles", icon: ShieldCheck },
+  {
+    href: "/admin/tickets",
+    label: "Support Tickets",
+    icon: LifeBuoy,
+    badgeKey: "tickets",
+  },
+  { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 
 function isActive(pathname: string, href: string, exact?: boolean) {
@@ -33,9 +73,11 @@ function isActive(pathname: string, href: string, exact?: boolean) {
 
 export function AdminShell({
   name,
+  badges = {},
   children,
 }: {
   name: string;
+  badges?: Partial<Record<BadgeKey, number>>;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -43,6 +85,8 @@ export function AdminShell({
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
+    toast("Signed out", "info");
+    startNavigation("Signing out…");
     window.location.href = "/login?tab=admin";
   }
 
@@ -58,6 +102,7 @@ export function AdminShell({
         {links.map((link) => {
           const active = isActive(pathname, link.href, link.exact);
           const Icon = link.icon;
+          const badge = link.badgeKey ? badges[link.badgeKey] : undefined;
           return (
             <Link
               key={link.href}
@@ -72,6 +117,11 @@ export function AdminShell({
             >
               <Icon className="h-4 w-4 shrink-0" />
               <span className="truncate">{link.label}</span>
+              {badge && badge > 0 ? (
+                <span className="ml-auto grid h-5 min-w-5 place-items-center rounded-full bg-red-500 px-1.5 text-[10px] font-bold text-white">
+                  {badge > 99 ? "99+" : badge}
+                </span>
+              ) : null}
             </Link>
           );
         })}
@@ -97,6 +147,18 @@ export function AdminShell({
           <div className="text-sm font-semibold text-navy">Admin Console</div>
           <div className="flex items-center gap-2">
             <Link
+              href="/admin/notifications"
+              className="relative grid h-9 w-9 place-items-center rounded-full hover:bg-muted"
+              title="Notifications"
+            >
+              <Bell className="h-4 w-4 text-navy" />
+              {(badges.notifications || 0) > 0 ? (
+                <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">
+                  {badges.notifications}
+                </span>
+              ) : null}
+            </Link>
+            <Link
               href="/"
               className="grid h-9 w-9 place-items-center rounded-full hover:bg-muted"
               title="Go to website"
@@ -105,12 +167,13 @@ export function AdminShell({
             </Link>
             <ProfileMenu
               name={name}
-              subtitle="Admin"
+              subtitle="Super Admin"
               redirectTo="/login?tab=admin"
               variant="light"
               links={[
                 { href: "/admin", label: "Dashboard" },
-                { href: "/admin/purchases", label: "Orders" },
+                { href: "/admin/purchases", label: "Holiday Requests" },
+                { href: "/admin/settings", label: "Settings" },
               ]}
             />
             <button

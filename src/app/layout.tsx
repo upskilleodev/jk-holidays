@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 import { site } from "@/lib/site";
+import { AppFeedback } from "@/components/feedback/AppFeedback";
 
 const display = Playfair_Display({
   variable: "--font-display",
@@ -91,6 +92,7 @@ export default function RootLayout({
     <html lang="en" className={`${display.variable} ${sans.variable}`}>
       <body className="min-h-dvh overflow-x-clip antialiased bg-background text-foreground font-sans">
         {children}
+        <AppFeedback />
       </body>
     </html>
   );

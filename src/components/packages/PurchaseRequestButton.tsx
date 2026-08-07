@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { startNavigation, toast } from "@/components/feedback/toast";
 import { FormEvent, useEffect, useState } from "react";
 
 type Props = {
@@ -47,11 +48,16 @@ export function PurchaseRequestButton({
     setLoading(false);
 
     if (!res.ok) {
-      setError(data.error || "Unable to submit request");
+      const message = data.error || "Unable to submit request";
+      setError(message);
+      toast(message, "error");
       return;
     }
 
-    setSuccess("Purchase request submitted. Our team will contact you for payment.");
+    const message =
+      "Purchase request submitted. Our team will contact you for payment.";
+    setSuccess(message);
+    toast(message, "success");
     setOpen(false);
     router.refresh();
   }
@@ -70,7 +76,10 @@ export function PurchaseRequestButton({
         </p>
         <button
           type="button"
-          onClick={() => router.push("/dashboard")}
+          onClick={() => {
+            startNavigation("Opening dashboard…");
+            router.push("/dashboard");
+          }}
           className="btn-dark mt-4"
         >
           Go to Dashboard
@@ -85,22 +94,24 @@ export function PurchaseRequestButton({
         <button
           type="button"
           className="btn-primary w-full"
-          onClick={() =>
+          onClick={() => {
+            startNavigation("Opening login…");
             router.push(
-              `/login?next=${encodeURIComponent(`/packages/${packageSlug}?request=1`)}`
-            )
-          }
+              `/login?next=${encodeURIComponent(`/packages/${packageSlug}?request=1`)}`,
+            );
+          }}
         >
           Login to Request Purchase
         </button>
         <button
           type="button"
           className="btn-dark w-full"
-          onClick={() =>
+          onClick={() => {
+            startNavigation("Opening signup…");
             router.push(
-              `/signup?next=${encodeURIComponent(`/packages/${packageSlug}?request=1`)}`
-            )
-          }
+              `/signup?next=${encodeURIComponent(`/packages/${packageSlug}?request=1`)}`,
+            );
+          }}
         >
           Create Account
         </button>

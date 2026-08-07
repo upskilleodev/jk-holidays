@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { Eye, EyeOff, Lock, User } from "lucide-react";
+import { startNavigation, toast } from "@/components/feedback/toast";
 
 export function AdminLoginForm({ embedded = false }: { embedded?: boolean }) {
   const router = useRouter();
@@ -29,16 +30,22 @@ export function AdminLoginForm({ embedded = false }: { embedded?: boolean }) {
     setLoading(false);
 
     if (!res.ok) {
-      setError(data.error || "Invalid credentials");
+      const message = data.error || "Invalid credentials";
+      setError(message);
+      toast(message, "error");
       return;
     }
 
     if (data.user?.role !== "admin") {
       await fetch("/api/auth/logout", { method: "POST" });
-      setError("This account is not an admin. Use member login instead.");
+      const message = "This account is not an admin. Use member login instead.";
+      setError(message);
+      toast(message, "error");
       return;
     }
 
+    toast("Admin signed in", "success");
+    startNavigation("Opening admin…");
     router.push("/admin");
     router.refresh();
   }

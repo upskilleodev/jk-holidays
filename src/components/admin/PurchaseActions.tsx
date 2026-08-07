@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "@/components/feedback/toast";
 
 export function PurchaseActions({ id, status }: { id: string; status: string }) {
   const router = useRouter();
@@ -14,12 +15,20 @@ export function PurchaseActions({ id, status }: { id: string; status: string }) 
         : window.prompt("Optional admin note") || "";
 
     setLoading(true);
-    await fetch(`/api/purchases/${id}`, {
+    const res = await fetch(`/api/purchases/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: nextStatus, adminNote: note }),
     });
     setLoading(false);
+    if (!res.ok) {
+      toast("Could not update order", "error");
+      return;
+    }
+    toast(
+      nextStatus === "active" ? "Membership activated" : "Order updated",
+      "success",
+    );
     router.refresh();
   }
 

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { startNavigation, toast } from "@/components/feedback/toast";
 
 type Props = {
   className?: string;
@@ -24,6 +25,8 @@ export function LogoutButton({
   async function logout() {
     setLoading(true);
     await fetch("/api/auth/logout", { method: "POST" });
+    toast("Signed out", "info");
+    startNavigation("Signing out…");
     router.push(redirectTo);
     router.refresh();
   }

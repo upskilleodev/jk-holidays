@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { cn } from "@/lib/utils";
+import { toast } from "@/components/feedback/toast";
 
 type Props = {
   className?: string;
@@ -38,12 +39,15 @@ export function ContactForm({
 
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      setError(data.error || "Unable to send message");
+      const message = data.error || "Unable to send message";
+      setError(message);
       setStatus("error");
+      toast(message, "error");
       return;
     }
 
     setStatus("done");
+    toast("Message sent. We'll get back to you shortly.", "success");
     event.currentTarget.reset();
   }
 

@@ -18,23 +18,23 @@ export default async function AdminHomePage() {
   ]);
 
   const cards = [
-    { label: "Users", value: users, href: "/admin/users", hint: "Registered members" },
+    { label: "Members", value: users, href: "/admin/users", hint: "Registered members" },
     { label: "Plans", value: packages, href: "/admin/packages", hint: "Membership plans" },
-    { label: "Pending", value: pending, href: "/admin/purchases", hint: "Awaiting approval" },
+    { label: "Requests", value: pending, href: "/admin/purchases", hint: "Holiday requests pending" },
     { label: "Active", value: active, href: "/admin/purchases", hint: "Live memberships" },
-    { label: "Cashback", value: cashbackPending, href: "/admin/referrals", hint: "Pending payouts" },
+    { label: "Cashback", value: cashbackPending, href: "/admin/wallet", hint: "Pending payouts" },
   ];
 
   return (
     <div>
-      <div className="text-xs font-bold tracking-[0.3em] text-navy uppercase">
-        ━━ Dashboard ━━
+      <div className="text-[10px] font-bold tracking-[0.2em] text-navy uppercase sm:text-xs">
+        Dashboard
       </div>
       <h1 className="mt-2 font-display text-3xl font-bold text-navy">
         Admin overview
       </h1>
       <p className="mt-3 text-sm text-muted-foreground leading-relaxed sm:text-base">
-        Approve purchases, manage membership plans, and track cashback — built for phone use.
+        Members, plans, holiday requests, resorts, wallet, and support — in one console.
       </p>
 
       <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
@@ -55,12 +55,18 @@ export default async function AdminHomePage() {
         ))}
       </div>
 
-      <div className="mt-6 grid gap-3">
+      <div className="mt-6 grid gap-3 sm:grid-cols-2">
         <Link href="/admin/purchases" className="btn-dark w-full">
-          Review purchase requests
+          Review holiday requests
         </Link>
         <Link href="/admin/packages/new" className="btn-primary w-full">
           Create new plan
+        </Link>
+        <Link href="/admin/bookings" className="btn-ghost w-full !border-border !text-navy">
+          Open bookings calendar
+        </Link>
+        <Link href="/admin/tickets" className="btn-ghost w-full !border-border !text-navy">
+          Support tickets
         </Link>
       </div>
     </div>

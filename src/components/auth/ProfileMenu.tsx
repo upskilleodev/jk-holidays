@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { startNavigation, toast } from "@/components/feedback/toast";
 
 type MenuLink = {
   href: string;
@@ -48,6 +49,8 @@ export function ProfileMenu({
   async function logout() {
     setLoading(true);
     await fetch("/api/auth/logout", { method: "POST" });
+    toast("Signed out", "info");
+    startNavigation("Signing out…");
     window.location.href = redirectTo;
   }
 

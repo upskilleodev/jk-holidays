@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { ProfileMenu } from "@/components/auth/ProfileMenu";
+import { startNavigation, toast } from "@/components/feedback/toast";
 import { cn } from "@/lib/utils";
 
 const nav = [
@@ -35,6 +36,8 @@ export function MemberShell({ name, referralCode, children }: Props) {
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
+    toast("Signed out", "info");
+    startNavigation("Signing out…");
     window.location.href = "/login";
   }
 
