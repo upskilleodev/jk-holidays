@@ -62,8 +62,8 @@ export default async function AdminHomePage() {
         <Link href="/admin/packages/new" className="btn-primary w-full">
           Create new plan
         </Link>
-        <Link href="/admin/bookings" className="btn-ghost w-full !border-border !text-navy">
-          Open bookings calendar
+        <Link href="/admin/resorts" className="btn-ghost w-full !border-border !text-navy">
+          Manage resorts
         </Link>
         <Link href="/admin/tickets" className="btn-ghost w-full !border-border !text-navy">
           Support tickets

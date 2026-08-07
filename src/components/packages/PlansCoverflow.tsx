@@ -40,42 +40,50 @@ export function PlansCoverflow({ packages }: { packages: PackageCardData[] }) {
   return (
     <div className="w-full overflow-x-clip md:hidden">
       <div className="relative mx-auto w-full max-w-sm select-none overflow-x-clip px-1">
-        <div className="relative min-h-[520px] overflow-hidden pb-2">
+        <div className="relative overflow-hidden">
           {packages.map((pkg, index) => {
             const offset = index - active;
             if (Math.abs(offset) > 1) return null;
             const years = validityYears(pkg.validity);
+            const isActive = offset === 0;
 
             return (
               <div
                 key={pkg._id}
-                role={offset !== 0 ? "button" : undefined}
-                tabIndex={offset !== 0 ? 0 : undefined}
+                role={!isActive ? "button" : undefined}
+                tabIndex={!isActive ? 0 : undefined}
                 aria-label={
-                  offset !== 0
+                  !isActive
                     ? `Show ${planLabel(pkg.title)} plan`
                     : undefined
                 }
                 onClick={() => {
-                  if (offset !== 0) setActive(index);
+                  if (!isActive) setActive(index);
                 }}
                 onKeyDown={(e) => {
-                  if (offset !== 0 && (e.key === "Enter" || e.key === " ")) {
+                  if (!isActive && (e.key === "Enter" || e.key === " ")) {
                     e.preventDefault();
                     setActive(index);
                   }
                 }}
-                className="absolute inset-x-0 top-0 mx-auto will-change-transform transition-all duration-500 ease-out"
+                className={cn(
+                  "inset-x-0 top-0 mx-auto will-change-transform transition-all duration-500 ease-out",
+                  isActive ? "relative" : "absolute",
+                )}
                 style={{
-                  transform:
-                    offset === 0
-                      ? "translate3d(0,0,0) scale(1)"
-                      : `translate3d(${offset * 62}%,0,0) scale(0.88)`,
-                  opacity: offset === 0 ? 1 : 0.35,
-                  zIndex: offset === 0 ? 30 : 10,
+                  transform: isActive
+                    ? "translate3d(0,0,0) scale(1)"
+                    : `translate3d(${offset * 62}%,0,0) scale(0.88)`,
+                  opacity: isActive ? 1 : 0.35,
+                  zIndex: isActive ? 30 : 10,
                 }}
               >
-                <div className="card-shine relative mx-3 overflow-hidden rounded-3xl bg-white text-left text-navy-deep shadow-2xl ring-1 ring-gold/20">
+                <div
+                  className={cn(
+                    "card-shine relative mx-3 overflow-hidden rounded-3xl bg-white text-left text-navy-deep shadow-2xl ring-1 ring-gold/20",
+                    offset !== 0 && "card-shine-paused",
+                  )}
+                >
                   <div className="relative m-3 mt-10 h-40 overflow-hidden rounded-2xl">
                     <Image
                       src={pkg.coverImage || "/assets/hero-resort.jpg"}
@@ -142,7 +150,7 @@ export function PlansCoverflow({ packages }: { packages: PackageCardData[] }) {
             );
           })}
         </div>
-        <div className="mt-4 flex items-center justify-center gap-6">
+        <div className="mt-3 flex items-center justify-center gap-6">
           <button
             type="button"
             aria-label="Previous plan"

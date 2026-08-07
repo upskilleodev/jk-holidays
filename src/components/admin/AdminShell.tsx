@@ -4,11 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
-  ArrowDownToLine,
   BarChart3,
   Bell,
   Building2,
-  CalendarCheck,
   Crown,
   ExternalLink,
   LayoutDashboard,
@@ -45,10 +43,8 @@ const links: {
     icon: Plane,
     badgeKey: "requests",
   },
-  { href: "/admin/bookings", label: "Bookings", icon: CalendarCheck },
   { href: "/admin/resorts", label: "Resorts", icon: Building2 },
   { href: "/admin/wallet", label: "Wallet & Transactions", icon: Wallet },
-  { href: "/admin/withdrawals", label: "Withdrawals", icon: ArrowDownToLine },
   { href: "/admin/reports", label: "Reports", icon: BarChart3 },
   {
     href: "/admin/notifications",

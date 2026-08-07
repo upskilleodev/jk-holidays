@@ -13,11 +13,11 @@ export function SectionHeading({
     <div className={align === "center" ? "text-center" : "text-left"}>
       <div
         className={cn(
-          "px-1 text-[10px] font-bold tracking-[0.16em] uppercase sm:text-xs sm:tracking-[0.3em]",
+          "text-xs font-bold tracking-[0.3em] uppercase",
           light ? "text-gold" : "text-navy",
         )}
       >
-        {eyebrow}
+        ━━ {eyebrow} ━━
       </div>
     </div>
   );

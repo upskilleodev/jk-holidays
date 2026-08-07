@@ -171,7 +171,7 @@
   background: linear-gradient(135deg, var(--gold), var(--gold-dark));
 }
 
-/* Shine: hover + auto every 4s on plan cards */
+/* Shine: auto every 5s; hover boost only on fine pointers */
 .card-shine {
   position: relative;
   overflow: hidden;
@@ -189,24 +189,31 @@
     transparent 80%
   );
   transform: translateX(-120%);
-  transition: transform 0.9s ease;
   pointer-events: none;
   z-index: 5;
-  animation: card-shine-sweep 4s ease-in-out infinite;
+  animation: card-shine-sweep 5s ease-in-out infinite;
 }
-.card-shine:hover::after,
-.card-shine:focus-within::after {
-  animation: none;
-  transform: translateX(120%);
+.card-shine-paused::after {
+  animation-play-state: paused;
+  opacity: 0;
+}
+@media (hover: hover) and (pointer: fine) {
+  .card-shine::after {
+    transition: transform 0.9s ease;
+  }
+  .card-shine:hover::after {
+    animation: none;
+    transform: translateX(120%);
+  }
 }
 @keyframes card-shine-sweep {
   0% {
     transform: translateX(-120%);
   }
-  22% {
+  18% {
     transform: translateX(120%);
   }
-  22.01%,
+  18.01%,
   100% {
     transform: translateX(-120%);
   }

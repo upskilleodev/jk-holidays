@@ -7,10 +7,10 @@ import { toast } from "@/components/feedback/toast";
 
 type Props = {
   id: string;
-  title: string;
+  name: string;
 };
 
-export function DeletePackageButton({ id, title }: Props) {
+export function DeleteResortButton({ id, name }: Props) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -30,16 +30,16 @@ export function DeletePackageButton({ id, title }: Props) {
 
   async function onConfirm() {
     setLoading(true);
-    const res = await fetch(`/api/packages/${id}`, { method: "DELETE" });
+    const res = await fetch(`/api/resorts/${id}`, { method: "DELETE" });
     const data = await res.json().catch(() => ({}));
     setLoading(false);
 
     if (!res.ok) {
-      toast(data.error || "Could not delete plan", "error");
+      toast(data.error || "Could not delete resort", "error");
       return;
     }
 
-    toast(`${title} deleted`, "success");
+    toast(`${name} deleted`, "success");
     setOpen(false);
     router.refresh();
   }
@@ -66,8 +66,8 @@ export function DeletePackageButton({ id, title }: Props) {
           <div
             role="alertdialog"
             aria-modal="true"
-            aria-labelledby="delete-package-title"
-            aria-describedby="delete-package-desc"
+            aria-labelledby="delete-resort-title"
+            aria-describedby="delete-resort-desc"
             className="relative w-full max-w-md rounded-2xl border bg-white p-5 shadow-xl"
           >
             <button
@@ -84,15 +84,15 @@ export function DeletePackageButton({ id, title }: Props) {
               <Trash2 className="h-5 w-5" />
             </div>
             <h2
-              id="delete-package-title"
+              id="delete-resort-title"
               className="mt-4 font-display text-2xl font-bold text-navy"
             >
-              Delete this plan?
+              Delete this resort?
             </h2>
-            <p id="delete-package-desc" className="mt-2 text-sm text-muted-foreground">
+            <p id="delete-resort-desc" className="mt-2 text-sm text-muted-foreground">
               This will permanently remove{" "}
-              <span className="font-semibold text-navy">{title}</span> from the
-              catalog. This cannot be undone.
+              <span className="font-semibold text-navy">{name}</span> from the
+              destinations gallery. This cannot be undone.
             </p>
 
             <div className="mt-5 grid gap-2 sm:grid-cols-2">
@@ -110,7 +110,7 @@ export function DeletePackageButton({ id, title }: Props) {
                 onClick={onConfirm}
                 className="inline-flex h-11 items-center justify-center rounded-md bg-danger px-4 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-55"
               >
-                {loading ? "Deleting…" : "Yes, delete plan"}
+                {loading ? "Deleting…" : "Yes, delete resort"}
               </button>
             </div>
           </div>

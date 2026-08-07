@@ -14,7 +14,7 @@ export function PackagesSection({ packages }: { packages: PackageCardData[] }) {
       <div className="mx-auto max-w-7xl px-4">
         <div className="text-center">
           <div className="px-1 text-[10px] font-bold tracking-[0.18em] text-gold sm:text-xs sm:tracking-[0.3em]">
-            OUR MEMBERSHIP PLANS
+            ━━ OUR MEMBERSHIP PLANS ━━
           </div>
         </div>
 

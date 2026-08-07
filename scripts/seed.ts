@@ -14,6 +14,14 @@ const UserSchema = new mongoose.Schema(
     email: { type: String, unique: true },
     passwordHash: String,
     role: { type: String, enum: ["user", "admin"], default: "user" },
+    adminRole: {
+      type: String,
+      enum: ["super_admin", "operations", "support"],
+    },
+    adminStatus: {
+      type: String,
+      enum: ["active", "invite_pending"],
+    },
     referralCode: { type: String, unique: true },
     referredBy: {
       type: mongoose.Schema.Types.ObjectId,
@@ -90,6 +98,71 @@ const Purchase =
 const CashbackSetting =
   mongoose.models.CashbackSetting ||
   mongoose.model("CashbackSetting", CashbackSettingSchema);
+
+const ResortSchema = new mongoose.Schema(
+  {
+    name: String,
+    label: String,
+    image: String,
+    slug: { type: String, unique: true },
+    status: { type: String, enum: ["draft", "published"], default: "draft" },
+    sortOrder: Number,
+  },
+  { timestamps: true }
+);
+
+const Resort = mongoose.models.Resort || mongoose.model("Resort", ResortSchema);
+
+const resorts = [
+  {
+    name: "Maldives",
+    label: "Overwater Villas",
+    image: "/assets/dest-maldives.jpg",
+    slug: "maldives",
+    status: "published",
+    sortOrder: 1,
+  },
+  {
+    name: "Bali",
+    label: "Indonesia",
+    image: "/assets/dest-bali.jpg",
+    slug: "bali",
+    status: "published",
+    sortOrder: 2,
+  },
+  {
+    name: "Dubai",
+    label: "UAE",
+    image: "/assets/dest-dubai.jpg",
+    slug: "dubai",
+    status: "published",
+    sortOrder: 3,
+  },
+  {
+    name: "Thailand",
+    label: "Krabi",
+    image: "/assets/dest-thailand.jpg",
+    slug: "thailand",
+    status: "published",
+    sortOrder: 4,
+  },
+  {
+    name: "Kashmir",
+    label: "India",
+    image: "/assets/dest-kashmir.jpg",
+    slug: "kashmir",
+    status: "published",
+    sortOrder: 5,
+  },
+  {
+    name: "Goa",
+    label: "India",
+    image: "/assets/dest-goa.jpg",
+    slug: "goa",
+    status: "published",
+    sortOrder: 6,
+  },
+];
 
 const packages = [
   {
@@ -252,11 +325,15 @@ async function seed() {
       email: adminEmail,
       passwordHash,
       role: "admin",
+      adminRole: "super_admin",
+      adminStatus: "active",
       referralCode: "JKADMIN01",
       referredBy: null,
     },
     { upsert: true, returnDocument: "after" }
   );
+
+  await User.deleteOne({ email: "ops@jkholidays.com" });
 
   const packageDocs: Record<string, { _id: mongoose.Types.ObjectId; price: number }> =
     {};
@@ -267,6 +344,13 @@ async function seed() {
       returnDocument: "after",
     });
     packageDocs[pkg.slug] = { _id: doc!._id, price: doc!.price };
+  }
+
+  for (const resort of resorts) {
+    await Resort.findOneAndUpdate({ slug: resort.slug }, resort, {
+      upsert: true,
+      returnDocument: "after",
+    });
   }
 
   const existingSetting = await CashbackSetting.findOne();
@@ -336,6 +420,7 @@ async function seed() {
   console.log(`Admin login: ${adminEmail} / ${adminPassword}`);
   console.log("Sample members password: Member@123");
   console.log(`Sample users + orders: ${sampleUsers.length}`);
+  console.log(`Resorts seeded: ${resorts.length}`);
   await mongoose.disconnect();
 }
 

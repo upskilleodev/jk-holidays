@@ -55,7 +55,7 @@ export default async function AdminPackagesPage() {
                 >
                   Edit
                 </Link>
-                <DeletePackageButton id={String(pkg._id)} />
+                <DeletePackageButton id={String(pkg._id)} title={pkg.title} />
               </div>
             </article>
           ))

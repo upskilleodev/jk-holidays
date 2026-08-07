@@ -12,6 +12,14 @@ const UserSchema = new Schema(
     },
     passwordHash: { type: String, required: true },
     role: { type: String, enum: ["user", "admin"], default: "user" },
+    adminRole: {
+      type: String,
+      enum: ["super_admin", "operations", "support"],
+    },
+    adminStatus: {
+      type: String,
+      enum: ["active", "invite_pending"],
+    },
     referralCode: { type: String, required: true, unique: true },
     referredBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
   },
