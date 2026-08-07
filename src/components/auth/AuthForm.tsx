@@ -12,6 +12,8 @@ export function AuthForm({ mode }: { mode: Mode }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const next = searchParams.get("next") || "/dashboard";
+  const referralFromLink =
+    searchParams.get("referral") || searchParams.get("referralCode") || "";
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [show, setShow] = useState(false);
@@ -124,6 +126,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
           <input
             name="referralCode"
             placeholder="Referral code"
+            defaultValue={referralFromLink}
             className="input-field mt-1"
           />
         </div>

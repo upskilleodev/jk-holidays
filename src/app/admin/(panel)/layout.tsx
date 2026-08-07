@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getSession } from "@/lib/auth";
+import { getAdminSession } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
 import { Purchase } from "@/models/Purchase";
 import { ContactMessage } from "@/models/ContactMessage";
@@ -10,9 +10,8 @@ export default async function AdminPanelLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getSession();
+  const session = await getAdminSession();
   if (!session) redirect("/login?tab=admin");
-  if (session.role !== "admin") redirect("/dashboard");
 
   await connectDB();
   const [pendingRequests, openTickets] = await Promise.all([

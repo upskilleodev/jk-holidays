@@ -35,7 +35,11 @@ export function MemberShell({ name, referralCode, children }: Props) {
   const [open, setOpen] = useState(false);
 
   async function logout() {
-    await fetch("/api/auth/logout", { method: "POST" });
+    await fetch("/api/auth/logout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ scope: "member" }),
+    });
     toast("Signed out", "info");
     startNavigation("Signing out…");
     window.location.href = "/login";
@@ -122,6 +126,7 @@ export function MemberShell({ name, referralCode, children }: Props) {
               name={name}
               subtitle="Member"
               redirectTo="/login"
+              scope="member"
               links={[
                 { href: "/dashboard", label: "Dashboard" },
                 { href: "/packages", label: "Browse Plans" },

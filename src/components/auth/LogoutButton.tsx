@@ -11,6 +11,8 @@ type Props = {
   redirectTo?: string;
   label?: string;
   iconOnly?: boolean;
+  /** Which session to clear — keeps the other role logged in. */
+  scope?: "member" | "admin" | "all";
 };
 
 export function LogoutButton({
@@ -18,13 +20,18 @@ export function LogoutButton({
   redirectTo = "/",
   label = "Logout",
   iconOnly = false,
+  scope = "all",
 }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   async function logout() {
     setLoading(true);
-    await fetch("/api/auth/logout", { method: "POST" });
+    await fetch("/api/auth/logout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ scope }),
+    });
     toast("Signed out", "info");
     startNavigation("Signing out…");
     router.push(redirectTo);

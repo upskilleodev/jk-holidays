@@ -84,7 +84,11 @@ export function AdminShell({
   const [open, setOpen] = useState(false);
 
   async function logout() {
-    await fetch("/api/auth/logout", { method: "POST" });
+    await fetch("/api/auth/logout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ scope: "admin" }),
+    });
     toast("Signed out", "info");
     startNavigation("Signing out…");
     window.location.href = "/login?tab=admin";
@@ -169,6 +173,7 @@ export function AdminShell({
               name={name}
               subtitle="Super Admin"
               redirectTo="/login?tab=admin"
+              scope="admin"
               variant="light"
               links={[
                 { href: "/admin", label: "Dashboard" },

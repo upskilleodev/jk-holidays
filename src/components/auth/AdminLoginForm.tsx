@@ -37,7 +37,12 @@ export function AdminLoginForm({ embedded = false }: { embedded?: boolean }) {
     }
 
     if (data.user?.role !== "admin") {
-      await fetch("/api/auth/logout", { method: "POST" });
+      // Login API already wrote a member cookie for this account — clear only that.
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ scope: "member" }),
+      });
       const message = "This account is not an admin. Use member login instead.";
       setError(message);
       toast(message, "error");

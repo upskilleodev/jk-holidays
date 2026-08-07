@@ -17,6 +17,7 @@ type Props = {
   redirectTo?: string;
   links?: MenuLink[];
   variant?: "dark" | "light";
+  scope?: "member" | "admin" | "all";
 };
 
 export function ProfileMenu({
@@ -25,6 +26,7 @@ export function ProfileMenu({
   redirectTo = "/login",
   links = [],
   variant = "dark",
+  scope = "all",
 }: Props) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -48,7 +50,11 @@ export function ProfileMenu({
 
   async function logout() {
     setLoading(true);
-    await fetch("/api/auth/logout", { method: "POST" });
+    await fetch("/api/auth/logout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ scope }),
+    });
     toast("Signed out", "info");
     startNavigation("Signing out…");
     window.location.href = redirectTo;

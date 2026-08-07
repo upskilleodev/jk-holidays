@@ -1,6 +1,7 @@
 import { connectDB } from "@/lib/db";
 import { User } from "@/models/User";
 import { Purchase } from "@/models/Purchase";
+import { DeleteUserButton } from "@/components/admin/DeleteUserButton";
 
 export const dynamic = "force-dynamic";
 
@@ -50,6 +51,13 @@ export default async function AdminUsersPage() {
                   <div className="mt-1 font-display text-xl tracking-[0.16em]">
                     {user.referralCode}
                   </div>
+                </div>
+                <div className="mt-4 flex justify-end">
+                  <DeleteUserButton
+                    id={String(user._id)}
+                    name={user.name}
+                    email={user.email}
+                  />
                 </div>
               </article>
             );

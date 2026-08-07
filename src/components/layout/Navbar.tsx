@@ -22,13 +22,11 @@ const membershipLinks = [
 ];
 
 type Props = {
-  user?: {
-    name: string;
-    role: "user" | "admin";
-  } | null;
+  member?: { name: string } | null;
+  admin?: { name: string } | null;
 };
 
-export function Navbar({ user }: Props) {
+export function Navbar({ member = null, admin = null }: Props) {
   const [open, setOpen] = useState(false);
   const [membershipOpen, setMembershipOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -106,26 +104,33 @@ export function Navbar({ user }: Props) {
               </span>
               {site.phone}
             </a>
-            {user?.role === "admin" ? (
-              <ProfileMenu
-                name={user.name}
-                subtitle="Admin"
-                redirectTo="/login?tab=admin"
-                links={[
-                  { href: "/admin", label: "Admin Panel" },
-                  { href: "/", label: "View Website" },
-                ]}
-              />
-            ) : user?.role === "user" ? (
-              <ProfileMenu
-                name={user.name}
-                subtitle="Member"
-                redirectTo="/login"
-                links={[
-                  { href: "/dashboard", label: "My Account" },
-                  { href: "/packages", label: "Browse Plans" },
-                ]}
-              />
+            {member || admin ? (
+              <div className="flex items-center gap-2">
+                {member ? (
+                  <ProfileMenu
+                    name={member.name}
+                    subtitle="Member"
+                    redirectTo="/login"
+                    scope="member"
+                    links={[
+                      { href: "/dashboard", label: "My Account" },
+                      { href: "/packages", label: "Browse Plans" },
+                    ]}
+                  />
+                ) : null}
+                {admin ? (
+                  <ProfileMenu
+                    name={admin.name}
+                    subtitle="Admin"
+                    redirectTo="/login?tab=admin"
+                    scope="admin"
+                    links={[
+                      { href: "/admin", label: "Admin Panel" },
+                      { href: "/", label: "View Website" },
+                    ]}
+                  />
+                ) : null}
+              </div>
             ) : (
               <>
                 <Link
@@ -191,15 +196,7 @@ export function Navbar({ user }: Props) {
               >
                 All Plans
               </Link>
-              {user?.role === "admin" ? (
-                <Link
-                  href="/admin"
-                  className="min-h-12 flex items-center hover:text-gold"
-                  onClick={() => setOpen(false)}
-                >
-                  Admin Panel
-                </Link>
-              ) : user?.role === "user" ? (
+              {member ? (
                 <Link
                   href="/dashboard"
                   className="min-h-12 flex items-center hover:text-gold"
@@ -207,7 +204,17 @@ export function Navbar({ user }: Props) {
                 >
                   My Account
                 </Link>
-              ) : (
+              ) : null}
+              {admin ? (
+                <Link
+                  href="/admin"
+                  className="min-h-12 flex items-center hover:text-gold"
+                  onClick={() => setOpen(false)}
+                >
+                  Admin Panel
+                </Link>
+              ) : null}
+              {!member && !admin ? (
                 <Link
                   href="/login"
                   className="min-h-12 flex items-center hover:text-gold"
@@ -215,14 +222,22 @@ export function Navbar({ user }: Props) {
                 >
                   Member Login
                 </Link>
-              )}
+              ) : null}
             </nav>
             <div className="mt-auto space-y-3 p-4 pb-8">
-              {user ? (
+              {member ? (
                 <LogoutButton
-                  redirectTo={
-                    user.role === "admin" ? "/login?tab=admin" : "/login"
-                  }
+                  scope="member"
+                  redirectTo="/login"
+                  label="Logout member"
+                  className="btn-ghost w-full"
+                />
+              ) : null}
+              {admin ? (
+                <LogoutButton
+                  scope="admin"
+                  redirectTo="/login?tab=admin"
+                  label="Logout admin"
                   className="btn-ghost w-full"
                 />
               ) : null}

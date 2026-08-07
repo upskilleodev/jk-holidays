@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { connectDB } from "@/lib/db";
-import { getSession, requireAdmin } from "@/lib/auth";
+import { getAdminSession, requireAdmin } from "@/lib/auth";
 import { jsonError, jsonOk, handleRouteError } from "@/lib/api";
 import { slugifyTitle } from "@/lib/utils";
 import { Package } from "@/models/Package";
@@ -10,10 +10,9 @@ export async function GET(request: Request) {
     await connectDB();
     const { searchParams } = new URL(request.url);
     const all = searchParams.get("all") === "1";
-    const session = await getSession();
+    const admin = await getAdminSession();
 
-    const filter =
-      all && session?.role === "admin" ? {} : { status: "published" };
+    const filter = all && admin ? {} : { status: "published" };
 
     const packages = await Package.find(filter).sort({
       sortOrder: 1,

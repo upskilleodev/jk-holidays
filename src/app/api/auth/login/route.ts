@@ -30,7 +30,7 @@ export async function POST(request: Request) {
       role: user.role,
       name: user.name,
     });
-    await setSessionCookie(token);
+    await setSessionCookie(token, user.role);
 
     return jsonOk({
       user: {

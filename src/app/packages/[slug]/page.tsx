@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Check } from "lucide-react";
 import { connectDB } from "@/lib/db";
-import { getSession } from "@/lib/auth";
+import { getMemberSession } from "@/lib/auth";
 import { formatINR } from "@/lib/utils";
 import { Package } from "@/models/Package";
 import { Purchase } from "@/models/Purchase";
@@ -28,13 +28,13 @@ export async function generateMetadata({ params }: Props) {
 export default async function PackageDetailPage({ params }: Props) {
   const { slug } = await params;
   await connectDB();
-  const session = await getSession();
+  const session = await getMemberSession();
 
   const pkg = await Package.findOne({ slug, status: "published" }).lean();
   if (!pkg) notFound();
 
   let purchase = null;
-  if (session && session.role === "user") {
+  if (session) {
     purchase = await Purchase.findOne({ userId: session.userId }).lean();
   }
 

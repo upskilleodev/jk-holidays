@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connectDB } from "@/lib/db";
-import { getSession } from "@/lib/auth";
+import { getMemberSession } from "@/lib/auth";
 import { formatINR } from "@/lib/utils";
 import { User } from "@/models/User";
 import { Purchase } from "@/models/Purchase";
@@ -16,13 +16,12 @@ export const metadata = {
 };
 
 export default async function DashboardPage() {
-  const session = await getSession();
+  const session = await getMemberSession();
   if (!session) redirect("/login?next=/dashboard");
-  if (session.role === "admin") redirect("/admin");
 
   await connectDB();
   const user = await User.findById(session.userId).select("-passwordHash");
-  if (!user) redirect("/login");
+  if (!user) redirect("/login?next=/dashboard");
 
   const purchase = await Purchase.findOne({ userId: session.userId }).populate(
     "packageId",
@@ -122,8 +121,8 @@ export default async function DashboardPage() {
           </div>
           <CopyReferralButton code={user.referralCode} />
           <p className="mt-4 text-sm text-muted-foreground">
-            Share this code. When a friend&apos;s purchase is approved, your
-            cashback is recorded.
+            Share via WhatsApp or Instagram. When a friend&apos;s purchase is
+            approved, your cashback is recorded.
           </p>
 
           <div className="mt-6">
