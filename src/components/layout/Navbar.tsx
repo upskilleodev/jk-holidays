@@ -53,9 +53,9 @@ export function Navbar({ member = null, admin = null }: Props) {
   return (
     <>
       <header className="sticky top-0 z-40 overflow-x-clip bg-navy-gradient text-white shadow-md safe-top">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:h-20 sm:gap-6">
-          <Link href="/" onClick={() => setOpen(false)} className="min-w-0">
-            <Logo />
+        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-3 px-4 sm:h-24 sm:gap-6">
+          <Link href="/" onClick={() => setOpen(false)} className="min-w-0 shrink-0">
+            <Logo size="md" priority />
           </Link>
 
           <nav className="hidden items-center gap-7 text-sm font-semibold tracking-wide lg:flex">
@@ -160,8 +160,8 @@ export function Navbar({ member = null, admin = null }: Props) {
       {open ? (
         <div className="lg:hidden fixed inset-0 z-[60] bg-navy text-white safe-top safe-bottom">
           <div className="flex h-full min-h-dvh flex-col">
-            <div className="flex h-16 items-center justify-between px-4 border-b border-white/10">
-              <Logo />
+            <div className="flex h-20 items-center justify-between px-4 border-b border-white/10">
+              <Logo size="md" />
               <button
                 type="button"
                 className="inline-flex h-10 w-10 items-center justify-center"

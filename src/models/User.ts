@@ -22,6 +22,8 @@ const UserSchema = new Schema(
     },
     referralCode: { type: String, required: true, unique: true },
     referredBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
+    /** Admin-managed referral / wallet points balance (INR). */
+    referralPoints: { type: Number, default: 0, min: 0 },
   },
   { timestamps: true }
 );

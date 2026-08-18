@@ -10,13 +10,12 @@ const CashbackRewardSchema = new Schema(
     referredUserId: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+      default: null,
     },
     purchaseId: {
       type: Schema.Types.ObjectId,
       ref: "Purchase",
-      required: true,
-      unique: true,
+      default: null,
     },
     amount: { type: Number, required: true },
     status: {
@@ -24,8 +23,22 @@ const CashbackRewardSchema = new Schema(
       enum: ["pending", "approved", "paid", "cancelled"],
       default: "pending",
     },
+    source: {
+      type: String,
+      enum: ["referral", "manual"],
+      default: "referral",
+    },
+    note: { type: String, default: "" },
   },
   { timestamps: true }
+);
+
+CashbackRewardSchema.index(
+  { purchaseId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { purchaseId: { $type: "objectId" } },
+  },
 );
 
 export type CashbackRewardDocument = InferSchemaType<

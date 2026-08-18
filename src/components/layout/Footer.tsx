@@ -58,7 +58,7 @@ export function Footer() {
     <footer className="bg-navy-gradient text-white/80">
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-14 md:grid-cols-2 lg:grid-cols-5">
         <div className="lg:col-span-1">
-          <Logo />
+          <Logo size="lg" />
           <p className="mt-4 text-sm">{site.description}</p>
           <div className="mt-4 flex gap-2">
             {social.map((s) => (

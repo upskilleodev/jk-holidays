@@ -43,7 +43,7 @@ export default function LoginPage() {
       <header className="bg-navy-gradient px-4 py-4">
         <div className="mx-auto max-w-7xl">
           <Link href="/">
-            <Logo />
+            <Logo size="md" priority />
           </Link>
         </div>
       </header>

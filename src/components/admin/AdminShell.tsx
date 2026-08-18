@@ -4,15 +4,17 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
-  BarChart3,
   Bell,
   Building2,
+  CalendarCheck,
   Crown,
   ExternalLink,
+  Headphones,
   LayoutDashboard,
   LifeBuoy,
   LogOut,
   Menu,
+  Phone,
   Plane,
   Settings,
   ShieldCheck,
@@ -23,6 +25,7 @@ import {
 import { Logo } from "@/components/brand/Logo";
 import { ProfileMenu } from "@/components/auth/ProfileMenu";
 import { startNavigation, toast } from "@/components/feedback/toast";
+import { site } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 type BadgeKey = "requests" | "notifications" | "tickets";
@@ -43,9 +46,9 @@ const links: {
     icon: Plane,
     badgeKey: "requests",
   },
+  { href: "/admin/bookings", label: "Bookings", icon: CalendarCheck },
   { href: "/admin/resorts", label: "Resorts", icon: Building2 },
-  { href: "/admin/wallet", label: "Wallet & Transactions", icon: Wallet },
-  { href: "/admin/reports", label: "Reports", icon: BarChart3 },
+  { href: "/admin/wallet", label: "Wallet & Payments", icon: Wallet },
   {
     href: "/admin/notifications",
     label: "Notifications",
@@ -92,8 +95,10 @@ export function AdminShell({
 
   const Sidebar = (
     <div className="flex h-full flex-col">
-      <div className="border-b border-white/10 bg-navy-gradient px-5 py-5">
-        <Logo />
+      <div className="border-b border-white/10 bg-navy-gradient px-5 py-4">
+        <Link href="/admin" onClick={() => setOpen(false)}>
+          <Logo size="sm" />
+        </Link>
         <div className="mt-1 text-[10px] font-bold tracking-widest text-gold">
           ADMIN PANEL
         </div>
@@ -109,9 +114,9 @@ export function AdminShell({
               href={link.href}
               onClick={() => setOpen(false)}
               className={cn(
-                "mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm",
+                "mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition",
                 active
-                  ? "bg-gold-gradient text-navy-deep font-semibold"
+                  ? "bg-gold-gradient font-semibold text-navy-deep"
                   : "hover:bg-white/5 hover:text-gold",
               )}
             >
@@ -143,34 +148,52 @@ export function AdminShell({
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-3 border-b bg-white px-4 md:px-6">
-          <div className="text-sm font-semibold text-navy">Admin Console</div>
-          <div className="flex items-center gap-2">
+        <header className="sticky top-0 z-30 flex h-16 items-center justify-between gap-3 border-b border-white/10 bg-navy-gradient px-4 text-white md:px-6">
+          <div className="flex items-center gap-2 lg:hidden">
+            <Logo size="sm" />
+          </div>
+          <div className="hidden text-sm font-semibold lg:block">
+            Admin Console
+          </div>
+          <div className="ml-auto flex items-center gap-3 md:gap-5">
+            <a
+              href={`tel:${site.phone.replace(/\s/g, "")}`}
+              className="hidden items-center gap-2 text-sm md:flex"
+            >
+              <Phone className="h-4 w-4 text-gold" />
+              {site.phone}
+            </a>
+            <Link
+              href="/admin/tickets"
+              className="hidden items-center gap-2 text-sm md:flex"
+            >
+              <Headphones className="h-4 w-4 text-gold" />
+              Support
+            </Link>
             <Link
               href="/admin/notifications"
-              className="relative grid h-9 w-9 place-items-center rounded-full hover:bg-muted"
+              className="relative grid h-9 w-9 place-items-center rounded-full hover:bg-white/10"
               title="Notifications"
             >
-              <Bell className="h-4 w-4 text-navy" />
+              <Bell className="h-5 w-5" />
               {(badges.notifications || 0) > 0 ? (
-                <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">
+                <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[9px] font-bold">
                   {badges.notifications}
                 </span>
               ) : null}
             </Link>
             <Link
               href="/"
-              className="grid h-9 w-9 place-items-center rounded-full hover:bg-muted"
+              className="hidden h-9 w-9 place-items-center rounded-full hover:bg-white/10 sm:grid"
               title="Go to website"
             >
-              <ExternalLink className="h-4 w-4 text-navy" />
+              <ExternalLink className="h-4 w-4" />
             </Link>
             <ProfileMenu
               name={name}
               subtitle="Super Admin"
               redirectTo="/login?tab=admin"
               scope="admin"
-              variant="light"
               links={[
                 { href: "/admin", label: "Dashboard" },
                 { href: "/admin/purchases", label: "Holiday Requests" },
@@ -183,7 +206,7 @@ export function AdminShell({
               onClick={() => setOpen(true)}
               aria-label="Open admin menu"
             >
-              <Menu className="h-5 w-5 text-navy" />
+              <Menu className="h-5 w-5" />
             </button>
           </div>
         </header>
@@ -201,10 +224,10 @@ export function AdminShell({
             onClick={() => setOpen(false)}
             aria-label="Close overlay"
           />
-          <div className="absolute inset-y-0 right-0 w-72 bg-navy-deep text-white shadow-xl">
+          <div className="absolute inset-y-0 left-0 w-72 overflow-y-auto bg-navy-deep text-white shadow-xl">
             <button
               type="button"
-              className="absolute left-3 top-3 z-10"
+              className="absolute right-3 top-3 z-10"
               onClick={() => setOpen(false)}
               aria-label="Close menu"
             >

@@ -50,6 +50,7 @@ export async function PATCH(request: Request, { params }: Params) {
               purchaseId: purchase._id,
               amount,
               status: "pending",
+              source: "referral",
             });
           }
         }
@@ -75,6 +76,7 @@ export async function PATCH(request: Request, { params }: Params) {
                 purchaseId: purchase._id,
                 amount,
                 status: "pending",
+                source: "referral",
               });
             }
           }

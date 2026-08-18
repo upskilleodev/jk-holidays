@@ -1,20 +1,28 @@
-import { Crown } from "lucide-react";
+import Image from "next/image";
 
-export function Logo({ variant = "light" }: { variant?: "light" | "dark" }) {
-  const text = variant === "light" ? "text-white" : "text-navy";
+type Props = {
+  /** Kept for callers; image works on light and dark surfaces. */
+  variant?: "light" | "dark";
+  size?: "sm" | "md" | "lg";
+  priority?: boolean;
+};
+
+const sizes = {
+  sm: { width: 160, height: 129, className: "h-12 w-auto sm:h-14" },
+  md: { width: 200, height: 162, className: "h-16 w-auto sm:h-[4.5rem]" },
+  lg: { width: 280, height: 226, className: "h-24 w-auto sm:h-28" },
+};
+
+export function Logo({ size = "md", priority = false }: Props) {
+  const s = sizes[size];
   return (
-    <div className="flex min-w-0 items-center gap-2">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-gold-gradient text-navy-deep">
-        <Crown className="h-5 w-5" strokeWidth={2.5} />
-      </div>
-      <div className={`min-w-0 leading-none ${text}`}>
-        <div className="font-display text-lg font-bold tracking-wide sm:text-xl">
-          <span className="text-gold">JK</span> HOLIDAYS
-        </div>
-        <div className="mt-0.5 truncate text-[8px] tracking-[0.14em] opacity-80 sm:text-[9px] sm:tracking-[0.25em]">
-          MEMORIES ... FOR LIFE
-        </div>
-      </div>
-    </div>
+    <Image
+      src="/assets/jk-holidays-logo.png"
+      alt="JK Holidays — Journey Beyond Expectations"
+      width={s.width}
+      height={s.height}
+      className={`${s.className} object-contain`}
+      priority={priority}
+    />
   );
 }
