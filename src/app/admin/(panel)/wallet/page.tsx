@@ -1,371 +1,424 @@
 import Link from "next/link";
 import {
   ArrowRight,
-  BadgeIndianRupee,
+  Building2,
   Clock3,
-  Sparkles,
+  TrendingUp,
   Users,
   Wallet,
 } from "lucide-react";
 import { connectDB } from "@/lib/db";
 import { CashbackReward } from "@/models/CashbackReward";
 import { User } from "@/models/User";
-import { formatINR } from "@/lib/utils";
-import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { Withdrawal } from "@/models/Withdrawal";
+import { formatINR, cn } from "@/lib/utils";
 import { RewardStatusButton } from "@/components/admin/RewardStatusButton";
+import { WithdrawalActions } from "@/components/admin/WithdrawalActions";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Wallet & Payments" };
 
 export default async function AdminWalletPage() {
   await connectDB();
-  const [rewards, membersWithBalance, totalPointsAgg] = await Promise.all([
-    CashbackReward.find()
-      .sort({ createdAt: -1 })
-      .limit(50)
-      .populate("referrerUserId", "name email referralCode referralPoints")
-      .populate("referredUserId", "name email")
-      .lean(),
-    User.countDocuments({ role: "user", referralPoints: { $gt: 0 } }),
-    User.aggregate([
-      { $match: { role: "user" } },
-      { $group: { _id: null, total: { $sum: "$referralPoints" } } },
-    ]),
-  ]);
+  const [rewards, withdrawals, membersWithBalance, totalPointsAgg] =
+    await Promise.all([
+      CashbackReward.find()
+        .sort({ createdAt: -1 })
+        .limit(40)
+        .populate("referrerUserId", "name email referralCode referralPoints")
+        .populate("referredUserId", "name email")
+        .lean(),
+      Withdrawal.find()
+        .sort({ createdAt: -1 })
+        .limit(40)
+        .populate("userId", "name email referralPoints")
+        .lean(),
+      User.countDocuments({ role: "user", referralPoints: { $gt: 0 } }),
+      User.aggregate([
+        { $match: { role: "user" } },
+        { $group: { _id: null, total: { $sum: "$referralPoints" } } },
+      ]),
+    ]);
 
   const circulating = totalPointsAgg[0]?.total || 0;
-  const pendingRewards = rewards.filter((r) => r.status === "pending");
-  const pendingAmount = pendingRewards.reduce(
-    (sum, r) => sum + (r.amount || 0),
+  const pendingWithdrawals = withdrawals.filter((w) => w.status === "pending");
+  const pendingPayoutAmount = pendingWithdrawals.reduce(
+    (sum, w) => sum + (w.amount || 0),
     0,
   );
-  const paidAmount = rewards
-    .filter((r) => r.status === "paid")
-    .reduce((sum, r) => sum + (r.amount || 0), 0);
-  const manualCount = rewards.filter((r) => r.source === "manual").length;
+  const totalPaidOut = withdrawals
+    .filter((w) => w.status === "approved" || w.status === "paid")
+    .reduce((sum, w) => sum + (w.amount || 0), 0);
+  const pendingRewards = rewards.filter((r) => r.status === "pending");
+
+  type LedgerRow = {
+    id: string;
+    at: Date;
+    memberName: string;
+    memberEmail: string;
+    desc: string;
+    type: "Credit" | "Debit";
+    amount: number;
+    status: string;
+    kind: "reward" | "withdrawal";
+  };
+
+  const ledger: LedgerRow[] = [
+    ...rewards.map((r) => {
+      const member = r.referrerUserId as unknown as {
+        name?: string;
+        email?: string;
+      } | null;
+      const isWithdrawalNote = String(r.note || "").includes("Withdrawal");
+      return {
+        id: `r-${String(r._id)}`,
+        at: new Date(r.createdAt),
+        memberName: member?.name || "Member",
+        memberEmail: member?.email || "",
+        desc:
+          r.source === "manual"
+            ? isWithdrawalNote
+              ? "Withdrawal settled"
+              : "Manual wallet credit"
+            : "Referral cashback",
+        type: (isWithdrawalNote ? "Debit" : "Credit") as "Credit" | "Debit",
+        amount: r.amount || 0,
+        status: r.status,
+        kind: "reward" as const,
+      };
+    }),
+    ...withdrawals.map((w) => {
+      const member = w.userId as unknown as {
+        name?: string;
+        email?: string;
+      } | null;
+      return {
+        id: `w-${String(w._id)}`,
+        at: new Date(w.createdAt),
+        memberName: member?.name || "Member",
+        memberEmail: member?.email || "",
+        desc: `Withdrawal · ${(w.method || "bank").toUpperCase()}`,
+        type: "Debit" as const,
+        amount: w.amount || 0,
+        status: w.status,
+        kind: "withdrawal" as const,
+      };
+    }),
+  ]
+    .sort((a, b) => b.at.getTime() - a.at.getTime())
+    .slice(0, 25);
 
   return (
     <div className="space-y-6">
-      <AdminPageHeader
-        title="Wallet & Payments"
-        description="A live view of member balances, referral cashback, and settlement actions."
-        action={
-          <div className="flex flex-wrap gap-2">
-            <Link href="/admin/users" className="btn-navy">
-              Set member points
-            </Link>
-            <Link
-              href="/admin/referrals"
-              className="btn-ghost !border-border !text-navy"
-            >
-              Cashback rules
-            </Link>
-          </div>
-        }
-      />
-
-      <div className="relative overflow-hidden rounded-3xl bg-navy-gradient p-6 text-white shadow-[0_20px_50px_-24px_rgba(15,23,42,0.55)] sm:p-8">
-        <div className="pointer-events-none absolute -right-10 -top-16 h-52 w-52 rounded-full bg-gold/25 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-20 left-8 h-40 w-40 rounded-full bg-white/10 blur-3xl" />
-        <div className="relative flex flex-wrap items-end justify-between gap-4">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-[11px] font-semibold tracking-[0.18em] text-gold uppercase">
-              <Sparkles className="h-3.5 w-3.5" />
-              Payments console
-            </div>
-            <h2 className="mt-4 font-display text-3xl font-bold sm:text-4xl">
-              {formatINR(circulating)}
-            </h2>
-            <p className="mt-1 text-sm text-white/70">
-              Total referral points currently held across member wallets
-            </p>
-          </div>
-          <div className="grid h-14 w-14 place-items-center rounded-2xl border border-gold/40 bg-gold/10 text-gold">
-            <Wallet className="h-6 w-6" />
-          </div>
-        </div>
-        <div className="relative mt-6 grid gap-3 sm:grid-cols-3">
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-            <div className="text-[11px] tracking-widest text-white/55 uppercase">
-              Pending settlement
-            </div>
-            <div className="mt-1 font-display text-2xl font-bold text-amber-300">
-              {formatINR(pendingAmount)}
-            </div>
-          </div>
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-            <div className="text-[11px] tracking-widest text-white/55 uppercase">
-              Marked paid
-            </div>
-            <div className="mt-1 font-display text-2xl font-bold text-emerald-300">
-              {formatINR(paidAmount)}
-            </div>
-          </div>
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-            <div className="text-[11px] tracking-widest text-white/55 uppercase">
-              Wallets with balance
-            </div>
-            <div className="mt-1 font-display text-2xl font-bold">
-              {membersWithBalance}
-            </div>
-          </div>
+      <div>
+        <h1 className="font-display text-3xl font-bold text-navy">
+          Wallet & Payments
+        </h1>
+        <div className="text-sm text-muted-foreground">
+          Dashboard › System wallet & payouts
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        {[
-          {
-            icon: Clock3,
-            label: "Pending requests",
-            value: String(pendingRewards.length),
-            hint: "Need approve / pay",
-            tone: "bg-amber-50 text-amber-600",
-          },
-          {
-            icon: BadgeIndianRupee,
-            label: "Manual adjustments",
-            value: String(manualCount),
-            hint: "Admin set points",
-            tone: "bg-gold/15 text-gold-dark",
-          },
-          {
-            icon: Users,
-            label: "Ledger entries",
-            value: String(rewards.length),
-            hint: "Latest 50 shown",
-            tone: "bg-sky-50 text-sky-600",
-          },
-        ].map((card) => {
-          const Icon = card.icon;
-          return (
-            <div
-              key={card.label}
-              className="rounded-2xl border bg-white p-5 shadow-sm"
-            >
-              <div
-                className={`grid h-11 w-11 place-items-center rounded-xl ${card.tone}`}
-              >
-                <Icon className="h-5 w-5" />
-              </div>
-              <div className="mt-4 text-xs text-muted-foreground">
-                {card.label}
-              </div>
-              <div className="mt-1 font-display text-3xl font-bold text-navy">
-                {card.value}
-              </div>
-              <div className="mt-1 text-xs text-muted-foreground">{card.hint}</div>
-            </div>
-          );
-        })}
-      </div>
-
-      {pendingRewards.length > 0 ? (
-        <div className="rounded-3xl border border-amber-200/80 bg-gradient-to-br from-amber-50 to-white p-5 shadow-sm sm:p-6">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <h3 className="font-display text-xl font-bold text-navy">
-                Action needed
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Pending cashback waiting for approval or payout.
-              </p>
-            </div>
-            <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-800">
-              {pendingRewards.length} pending
-            </span>
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="rounded-2xl bg-navy-gradient p-5 text-white shadow-sm">
+          <div className="text-sm text-white/80">Total System Liquidity</div>
+          <div className="mt-2 font-display text-3xl font-bold text-gold">
+            {formatINR(circulating)}
           </div>
-          <div className="mt-4 grid gap-3 lg:grid-cols-2">
-            {pendingRewards.slice(0, 4).map((r) => {
-              const member = r.referrerUserId as unknown as {
-                name?: string;
-                email?: string;
-              } | null;
-              return (
-                <div
-                  key={String(r._id)}
-                  className="rounded-2xl border border-amber-100 bg-white p-4"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="font-semibold text-navy">
-                        {member?.name || "Member"}
-                      </div>
-                      <div className="truncate text-xs text-muted-foreground">
-                        {member?.email}
-                      </div>
-                    </div>
-                    <div className="font-display text-xl font-bold text-navy">
-                      {formatINR(r.amount)}
-                    </div>
-                  </div>
-                  <div className="mt-3">
-                    <RewardStatusButton
-                      id={String(r._id)}
-                      status={r.status}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      ) : null}
-
-      <div className="overflow-hidden rounded-3xl border bg-white shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-4 sm:px-6">
-          <div>
-            <h3 className="font-display text-lg font-bold text-navy">
-              Transaction ledger
-            </h3>
-            <p className="text-xs text-muted-foreground">
-              Referral cashback and manual wallet adjustments
-            </p>
+          <div className="mt-1 text-xs text-white/70">
+            Points held across member wallets
           </div>
           <Link
             href="/admin/users"
-            className="inline-flex items-center gap-1 text-xs font-bold text-blue-600"
+            className="mt-4 inline-flex h-10 w-full items-center justify-center rounded-lg bg-gold-gradient text-sm font-bold text-navy-deep"
           >
-            Manage balances <ArrowRight className="h-3.5 w-3.5" />
+            MANAGE BALANCES
           </Link>
         </div>
 
-        <div className="hidden overflow-x-auto lg:block">
-          <table className="w-full min-w-[760px] text-sm">
-            <thead className="bg-[oklch(0.97_0.01_260)] text-left text-xs text-muted-foreground">
-              <tr>
-                <th className="px-6 py-3">Member</th>
-                <th className="px-3 py-3">Type</th>
-                <th className="px-3 py-3">Date</th>
-                <th className="px-3 py-3">Status</th>
-                <th className="px-3 py-3 text-right">Amount</th>
-                <th className="px-6 py-3 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {rewards.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={6}
-                    className="px-6 py-12 text-center text-muted-foreground"
-                  >
-                    No wallet transactions yet. Set points from Members or
-                    approve referred purchases.
-                  </td>
+        <AdminStatCard
+          icon={TrendingUp}
+          tone="emerald"
+          label="Total Paid Out"
+          value={formatINR(totalPaidOut)}
+          sub="Approved + paid withdrawals"
+          href="/admin/withdrawals"
+          linkText="View History"
+        />
+        <AdminStatCard
+          icon={Clock3}
+          tone="amber"
+          label="Payouts Pending"
+          value={formatINR(pendingPayoutAmount)}
+          sub={`${pendingWithdrawals.length} under process`}
+          href="/admin/withdrawals"
+          linkText="Review Queue"
+        />
+        <AdminStatCard
+          icon={Users}
+          tone="blue"
+          label="Active Wallets"
+          value={String(membersWithBalance)}
+          sub="Members with balance > 0"
+          href="/admin/users"
+          linkText="View Members"
+        />
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="rounded-2xl border bg-white p-5 shadow-sm lg:col-span-2">
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="font-display text-lg font-bold text-navy">
+              Recent Transactions
+            </h3>
+            <Link
+              href="/admin/reports/financial"
+              className="text-xs font-semibold text-blue-600 hover:underline"
+            >
+              View All
+            </Link>
+          </div>
+
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full min-w-[640px] text-sm">
+              <thead className="text-left text-xs text-muted-foreground">
+                <tr className="border-b">
+                  <th className="py-2 pr-2">Date</th>
+                  <th className="pr-2">Member</th>
+                  <th className="pr-2">Description</th>
+                  <th className="pr-2">Type</th>
+                  <th className="text-right">Amount</th>
                 </tr>
-              ) : (
-                rewards.map((r) => {
-                  const member = r.referrerUserId as unknown as {
-                    name?: string;
-                    email?: string;
-                    referralPoints?: number;
-                  } | null;
-                  return (
-                    <tr key={String(r._id)} className="border-t">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="grid h-9 w-9 place-items-center rounded-full bg-navy text-xs font-bold text-white">
-                            {(member?.name || "M").charAt(0).toUpperCase()}
-                          </div>
-                          <div className="min-w-0">
-                            <div className="font-semibold text-navy">
-                              {member?.name || "—"}
-                            </div>
-                            <div className="truncate text-xs text-muted-foreground">
-                              {member?.email}
-                            </div>
-                          </div>
+              </thead>
+              <tbody>
+                {ledger.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="py-10 text-center text-muted-foreground"
+                    >
+                      No wallet activity yet.
+                    </td>
+                  </tr>
+                ) : (
+                  ledger.map((row) => (
+                    <tr key={row.id} className="border-b last:border-0">
+                      <td className="py-3 pr-2 whitespace-nowrap">
+                        <div>
+                          {row.at.toLocaleDateString("en-IN", {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                          })}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {row.at.toLocaleTimeString("en-IN", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
                         </div>
                       </td>
-                      <td className="px-3 py-4">
-                        <div className="font-medium">
-                          {r.source === "manual"
-                            ? "Manual points"
-                            : "Referral cashback"}
+                      <td className="pr-2">
+                        <div className="font-medium text-navy">
+                          {row.memberName}
                         </div>
-                        {r.note ? (
-                          <div className="max-w-[200px] truncate text-xs text-muted-foreground">
-                            {r.note}
-                          </div>
-                        ) : null}
+                        <div className="max-w-[140px] truncate text-xs text-muted-foreground">
+                          {row.memberEmail}
+                        </div>
                       </td>
-                      <td className="px-3 py-4 text-muted-foreground">
-                        {new Date(r.createdAt).toLocaleDateString("en-IN")}
+                      <td className="pr-2">
+                        <div className="font-medium text-navy">{row.desc}</div>
+                        <div className="text-xs capitalize text-muted-foreground">
+                          {row.status}
+                        </div>
                       </td>
-                      <td className="px-3 py-4">
-                        <span className={`status-pill status-${r.status}`}>
-                          {r.status}
+                      <td className="pr-2">
+                        <span
+                          className={cn(
+                            "inline-flex rounded-full border px-2.5 py-0.5 text-xs font-semibold",
+                            row.type === "Credit"
+                              ? "border-emerald-500 text-emerald-600"
+                              : "border-rose-500 text-rose-600",
+                          )}
+                        >
+                          {row.type}
                         </span>
                       </td>
-                      <td className="px-3 py-4 text-right font-display text-base font-bold text-navy">
-                        {formatINR(r.amount)}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex justify-end">
-                          <div className="w-44">
-                            <RewardStatusButton
-                              id={String(r._id)}
-                              status={r.status}
-                            />
-                          </div>
-                        </div>
+                      <td
+                        className={cn(
+                          "text-right font-semibold",
+                          row.type === "Credit"
+                            ? "text-emerald-600"
+                            : "text-rose-600",
+                        )}
+                      >
+                        {row.type === "Credit" ? "+" : "-"}{" "}
+                        {formatINR(row.amount)}
                       </td>
                     </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <div className="rounded-2xl border bg-white p-5 shadow-sm">
+            <div className="flex items-center justify-between">
+              <h3 className="font-display text-lg font-bold text-navy">
+                Payout Management
+              </h3>
+              <Wallet className="h-5 w-5 text-gold" />
+            </div>
+            <div className="mt-3 text-xs text-muted-foreground">
+              Pending withdrawal amount
+            </div>
+            <div className="font-display text-2xl font-bold text-amber-600">
+              {formatINR(pendingPayoutAmount)}
+            </div>
+
+            <ul className="mt-4 max-h-[320px] space-y-2 overflow-y-auto">
+              {pendingWithdrawals.length === 0 ? (
+                <li className="py-6 text-center text-sm text-muted-foreground">
+                  No pending payouts.
+                </li>
+              ) : (
+                pendingWithdrawals.slice(0, 8).map((w) => {
+                  const member = w.userId as unknown as {
+                    name?: string;
+                    email?: string;
+                  } | null;
+                  return (
+                    <li
+                      key={String(w._id)}
+                      className="rounded-xl border px-3 py-3"
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          <div className="truncate font-semibold text-navy">
+                            {member?.name || "Member"}
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            {(w.method || "bank").toUpperCase()} ·{" "}
+                            {String(w.accountDetails || "").slice(0, 28)}
+                          </div>
+                        </div>
+                        <div className="font-display font-bold text-navy">
+                          {formatINR(w.amount)}
+                        </div>
+                      </div>
+                      <div className="mt-2">
+                        <WithdrawalActions
+                          id={String(w._id)}
+                          status={w.status}
+                        />
+                      </div>
+                    </li>
                   );
                 })
               )}
-            </tbody>
-          </table>
-        </div>
+            </ul>
 
-        <div className="space-y-3 p-4 lg:hidden">
-          {rewards.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">
-              No wallet transactions yet.
-            </p>
-          ) : (
-            rewards.map((r) => {
-              const member = r.referrerUserId as unknown as {
-                name?: string;
-                email?: string;
-              } | null;
-              return (
-                <article
-                  key={String(r._id)}
-                  className="rounded-2xl border border-border/80 p-4"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <div className="font-semibold text-navy">
-                        {member?.name || "—"}
+            <Link
+              href="/admin/withdrawals"
+              className="mt-4 inline-flex h-10 w-full items-center justify-center gap-1 rounded-lg border text-xs font-bold tracking-wide text-navy uppercase hover:bg-muted"
+            >
+              Open full withdrawals <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+
+          {pendingRewards.length > 0 ? (
+            <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-5">
+              <div className="flex items-center gap-2">
+                <Building2 className="h-4 w-4 text-amber-700" />
+                <h4 className="font-semibold text-navy">
+                  Cashback awaiting review
+                </h4>
+              </div>
+              <ul className="mt-3 space-y-2">
+                {pendingRewards.slice(0, 3).map((r) => {
+                  const member = r.referrerUserId as unknown as {
+                    name?: string;
+                  } | null;
+                  return (
+                    <li
+                      key={String(r._id)}
+                      className="rounded-xl border border-amber-100 bg-white px-3 py-2"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-sm font-medium text-navy">
+                          {member?.name || "Member"}
+                        </span>
+                        <span className="font-semibold">
+                          {formatINR(r.amount)}
+                        </span>
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        {r.source === "manual"
-                          ? "Manual points"
-                          : "Referral cashback"}{" "}
-                        · {new Date(r.createdAt).toLocaleDateString("en-IN")}
+                      <div className="mt-2">
+                        <RewardStatusButton
+                          id={String(r._id)}
+                          status={r.status}
+                        />
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-display text-lg font-bold text-navy">
-                        {formatINR(r.amount)}
-                      </div>
-                      <span className={`status-pill status-${r.status}`}>
-                        {r.status}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="mt-3">
-                    <RewardStatusButton
-                      id={String(r._id)}
-                      status={r.status}
-                    />
-                  </div>
-                </article>
-              );
-            })
-          )}
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ) : null}
         </div>
       </div>
+    </div>
+  );
+}
+
+function AdminStatCard({
+  icon: Icon,
+  tone,
+  label,
+  value,
+  sub,
+  href,
+  linkText,
+}: {
+  icon: typeof TrendingUp;
+  tone: "emerald" | "blue" | "amber";
+  label: string;
+  value: string;
+  sub: string;
+  href: string;
+  linkText: string;
+}) {
+  const tones = {
+    emerald: "bg-emerald-100 text-emerald-600",
+    blue: "bg-blue-100 text-blue-600",
+    amber: "bg-amber-100 text-amber-600",
+  };
+  return (
+    <div className="rounded-2xl border bg-white p-5 shadow-sm">
+      <div className="flex items-start justify-between">
+        <div>
+          <div className="text-sm text-muted-foreground">{label}</div>
+          <div className="mt-2 font-display text-2xl font-bold text-navy">
+            {value}
+          </div>
+          <div className="text-xs text-muted-foreground">{sub}</div>
+        </div>
+        <div
+          className={cn(
+            "grid h-12 w-12 place-items-center rounded-full",
+            tones[tone],
+          )}
+        >
+          <Icon className="h-6 w-6" />
+        </div>
+      </div>
+      <Link
+        href={href}
+        className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:underline"
+      >
+        {linkText} <ArrowRight className="h-3 w-3" />
+      </Link>
     </div>
   );
 }

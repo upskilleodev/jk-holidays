@@ -17,6 +17,14 @@ function memberIdFrom(user: {
   return user.referralCode?.startsWith("JK") ? user.referralCode : `JK${tail}`;
 }
 
+function planTierFrom(title: string | null | undefined): AdminMemberRow["planTier"] {
+  const t = (title || "").toLowerCase();
+  if (t.includes("platinum")) return "Platinum";
+  if (t.includes("gold")) return "Gold";
+  if (t.includes("silver")) return "Silver";
+  return "Other";
+}
+
 export default async function AdminUsersPage() {
   await connectDB();
   const users = await User.find({ role: "user" })
@@ -34,15 +42,20 @@ export default async function AdminUsersPage() {
   const members: AdminMemberRow[] = users.map((user) => {
     const purchase = purchaseMap.get(String(user._id));
     const pkg = purchase?.packageId as { title?: string } | null | undefined;
+    const planTitle = pkg?.title || null;
     return {
       id: String(user._id),
       name: user.name,
       email: user.email,
+      mobile: user.mobile || "",
       referralCode: user.referralCode,
       memberId: memberIdFrom(user),
       referralPoints: user.referralPoints || 0,
       purchaseStatus: purchase?.status || null,
-      planTitle: pkg?.title || null,
+      planTitle,
+      planTier: planTierFrom(planTitle),
+      accountStatus:
+        user.accountStatus === "inactive" ? "inactive" : "active",
       joinedAt: new Date(user.createdAt).toISOString(),
     };
   });

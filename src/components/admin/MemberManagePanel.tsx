@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import {
   Check,
   Copy,
+  Edit,
   Eye,
   KeyRound,
   Trash2,
@@ -13,6 +14,8 @@ import {
 } from "lucide-react";
 import { toast } from "@/components/feedback/toast";
 import { formatINR } from "@/lib/utils";
+
+type Tab = "credentials" | "points" | "password" | "delete";
 
 type Props = {
   id: string;
@@ -23,14 +26,15 @@ type Props = {
   referralPoints: number;
   purchaseStatus?: string | null;
   joinedAt: string;
+  /** Visual trigger; defaults to Manage button */
+  trigger?: "manage" | "eye" | "edit";
+  initialTab?: Tab;
 };
-
-type Tab = "credentials" | "points" | "password" | "delete";
 
 export function MemberManagePanel(props: Props) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [tab, setTab] = useState<Tab>("credentials");
+  const [tab, setTab] = useState<Tab>(props.initialTab || "credentials");
   const [loading, setLoading] = useState(false);
   const [points, setPoints] = useState(String(props.referralPoints || 0));
   const [note, setNote] = useState("");
@@ -46,8 +50,8 @@ export function MemberManagePanel(props: Props) {
     setPassword("");
     setConfirmPassword("");
     setRevealedPassword(null);
-    setTab("credentials");
-  }, [open, props.referralPoints]);
+    setTab(props.initialTab || "credentials");
+  }, [open, props.referralPoints, props.initialTab]);
 
   useEffect(() => {
     if (!open) return;
@@ -169,15 +173,38 @@ export function MemberManagePanel(props: Props) {
     router.refresh();
   }
 
+  const trigger = props.trigger || "manage";
+
   return (
     <>
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-border px-3 text-xs font-bold text-navy hover:border-gold hover:bg-cream/50"
+        aria-label={
+          trigger === "eye"
+            ? `View ${props.name}`
+            : trigger === "edit"
+              ? `Edit ${props.name}`
+              : `Manage ${props.name}`
+        }
+        className={
+          trigger === "manage"
+            ? "inline-flex h-9 items-center gap-1.5 rounded-lg border border-border px-3 text-xs font-bold text-navy hover:border-gold hover:bg-cream/50"
+            : trigger === "eye"
+              ? "rounded-md p-1.5 text-blue-600 hover:bg-blue-50"
+              : "rounded-md p-1.5 text-amber-600 hover:bg-amber-50"
+        }
       >
-        <Eye className="h-3.5 w-3.5" />
-        Manage
+        {trigger === "eye" ? (
+          <Eye className="h-4 w-4" />
+        ) : trigger === "edit" ? (
+          <Edit className="h-4 w-4" />
+        ) : (
+          <>
+            <Eye className="h-3.5 w-3.5" />
+            Manage
+          </>
+        )}
       </button>
 
       {open ? (

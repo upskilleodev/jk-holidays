@@ -8,6 +8,7 @@ const schema = z.object({
   name: z.string().min(2),
   email: z.string().email(),
   phone: z.string().optional(),
+  subject: z.string().optional(),
   message: z.string().min(5),
 });
 
@@ -15,7 +16,16 @@ export async function POST(request: Request) {
   try {
     const body = schema.parse(await request.json());
     await connectDB();
-    const message = await ContactMessage.create(body);
+    const count = await ContactMessage.countDocuments();
+    const ticketId = `TCK${1000 + count + 1}`;
+    const message = await ContactMessage.create({
+      ...body,
+      subject: body.subject || body.message.slice(0, 60),
+      ticketId,
+      priority: "medium",
+      ticketStatus: "open",
+      source: "contact",
+    });
     return jsonOk({ message }, 201);
   } catch (error) {
     if (error instanceof z.ZodError) {

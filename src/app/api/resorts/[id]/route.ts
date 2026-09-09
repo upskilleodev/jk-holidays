@@ -17,6 +17,8 @@ const updateSchema = z.object({
   name: z.string().min(2).optional(),
   label: z.string().min(1).optional(),
   image: imageSchema.optional(),
+  photos: z.array(imageSchema).max(12).optional(),
+  description: z.string().max(2000).optional(),
   status: z.enum(["draft", "published"]).optional(),
   sortOrder: z.number().optional(),
 });

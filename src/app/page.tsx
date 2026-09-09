@@ -8,6 +8,7 @@ import { DestinationsSection } from "@/components/home/DestinationsSection";
 import { HowSection } from "@/components/home/HowSection";
 import { TestimonialsSection } from "@/components/home/TestimonialsSection";
 import { ReferralSection } from "@/components/home/ReferralSection";
+import { HolidayTripsSection } from "@/components/home/HolidayTripsSection";
 import { OffersSection } from "@/components/home/OffersSection";
 
 export const dynamic = "force-dynamic";
@@ -42,6 +43,7 @@ export default async function HomePage() {
       <DestinationsSection />
       <HowSection />
       <TestimonialsSection />
+      <HolidayTripsSection title="Featured Holiday Packages" limit={3} />
       <ReferralSection />
       <OffersSection />
     </SiteShell>

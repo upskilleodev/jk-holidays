@@ -24,6 +24,8 @@ export default async function EditResortPage({ params }: Props) {
             name: resort.name,
             label: resort.label,
             image: resort.image,
+            photos: (resort.photos as string[] | undefined) || [resort.image],
+            description: (resort.description as string | undefined) || "",
             status: resort.status as "draft" | "published",
             sortOrder: resort.sortOrder,
           }}

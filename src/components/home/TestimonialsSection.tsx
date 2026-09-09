@@ -1,152 +1,215 @@
 "use client";
 
-import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRef, useState } from "react";
 import {
   ChevronLeft,
   ChevronRight,
-  Quote,
   Star,
+  Users,
 } from "lucide-react";
-import { testimonials } from "@/lib/site";
+import { site, testimonials } from "@/lib/site";
+import { Reveal } from "@/components/home/Reveal";
 import { cn } from "@/lib/utils";
-import { SectionHeading } from "@/components/home/SectionHeading";
 
-function Stars() {
+const avatarTones = [
+  "bg-[#1e3a5f]",
+  "bg-[#8b5a2b]",
+  "bg-[#2f5d50]",
+  "bg-[#5c3d6e]",
+  "bg-[#6b3a3a]",
+  "bg-[#3d5a80]",
+];
+
+function ReviewCard({
+  item,
+  toneIndex,
+}: {
+  item: (typeof testimonials)[number];
+  toneIndex: number;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const short =
+    item.quote.length > 140 ? `${item.quote.slice(0, 140).trim()}…` : item.quote;
+
   return (
-    <div className="flex text-gold">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <Star key={i} className="h-4 w-4 fill-current" />
-      ))}
+    <article className="flex w-[min(86vw,320px)] shrink-0 snap-start flex-col rounded-2xl border border-navy/8 bg-white p-4 shadow-[0_10px_30px_rgba(15,23,42,0.08)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_16px_40px_rgba(15,23,42,0.12)] sm:w-[300px]">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <div
+            className={cn(
+              "grid h-10 w-10 shrink-0 place-items-center rounded-full text-xs font-bold text-white",
+              avatarTones[toneIndex % avatarTones.length],
+            )}
+          >
+            {item.shortName.slice(0, 2).toUpperCase()}
+          </div>
+          <div className="min-w-0">
+            <div className="truncate text-sm font-bold text-navy">
+              {item.shortName}
+            </div>
+            <div className="truncate text-[11px] text-muted-foreground">
+              {item.date}
+            </div>
+          </div>
+        </div>
+        <div className="inline-flex items-center gap-1 text-sm font-bold text-emerald-600">
+          <Star className="h-3.5 w-3.5 fill-current" />
+          {item.rating}
+        </div>
+      </div>
+
+      <p className="mt-3 text-[13px] leading-relaxed text-navy/75">
+        {expanded ? item.quote : short}{" "}
+        {item.quote.length > 140 ? (
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            className="font-bold text-navy underline-offset-2 hover:underline"
+          >
+            {expanded ? "Read Less" : "Read More"}
+          </button>
+        ) : null}
+      </p>
+
+      <div className="mt-3 grid grid-cols-4 gap-1.5">
+        {item.photos.map((src) => (
+          <div
+            key={src}
+            className="relative aspect-square overflow-hidden rounded-lg"
+          >
+            <Image
+              src={src}
+              alt=""
+              fill
+              className="object-cover"
+              sizes="72px"
+            />
+          </div>
+        ))}
+      </div>
+
+      <Link
+        href="/destinations"
+        className="mt-3 text-sm font-semibold text-gold-dark hover:underline"
+      >
+        {item.packageLabel}
+      </Link>
+    </article>
+  );
+}
+
+function SocialProofStack() {
+  return (
+    <div className="relative mx-auto w-full max-w-[220px] shrink-0 lg:mx-0">
+      <div className="space-y-3">
+        <a
+          href={site.social.instagram}
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center gap-3 rounded-2xl bg-[#d8f0e4] px-4 py-3 shadow-sm transition hover:-translate-y-0.5"
+        >
+          <span className="grid h-9 w-9 place-items-center rounded-xl bg-white/80 text-navy">
+            <svg
+              viewBox="0 0 24 24"
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              aria-hidden
+            >
+              <rect x="3" y="3" width="18" height="18" rx="5" />
+              <circle cx="12" cy="12" r="4" />
+              <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+            </svg>
+          </span>
+          <span className="text-sm font-bold text-navy">40K+ Community</span>
+        </a>
+        <div className="flex items-center gap-3 rounded-2xl bg-[#f7d6e0] px-4 py-3 shadow-sm">
+          <span className="grid h-9 w-9 place-items-center rounded-xl bg-white/80 text-navy">
+            <Users className="h-4 w-4" />
+          </span>
+          <span className="text-sm font-bold text-navy">10K+ Families</span>
+        </div>
+        <div className="flex items-center gap-3 rounded-2xl bg-[#f6ecc2] px-4 py-3 shadow-sm">
+          <span className="grid h-9 w-9 place-items-center rounded-xl bg-white text-sm font-black text-[#4285F4]">
+            G
+          </span>
+          <span className="text-sm font-bold text-navy">
+            4.9{" "}
+            <span className="font-semibold text-navy/70">(2.4K+ Reviews)</span>
+          </span>
+        </div>
+      </div>
+      <div className="absolute -right-3 top-1/2 grid h-14 w-14 -translate-y-1/2 place-items-center overflow-hidden rounded-full border-4 border-white bg-navy shadow-lg">
+        <Image
+          src="/assets/jk-holidays-mark.png"
+          alt="JK Holidays"
+          width={40}
+          height={40}
+          className="object-contain"
+        />
+      </div>
     </div>
   );
 }
 
 export function TestimonialsSection() {
-  const [index, setIndex] = useState(0);
-  const total = testimonials.length;
-  const prev = () => setIndex((i) => (i - 1 + total) % total);
-  const next = () => setIndex((i) => (i + 1) % total);
+  const scrollerRef = useRef<HTMLDivElement>(null);
 
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const onTouchStart = (e: React.TouchEvent) =>
-    setTouchStart(e.touches[0].clientX);
-  const onTouchEnd = (e: React.TouchEvent) => {
-    if (touchStart === null) return;
-    const dx = e.changedTouches[0].clientX - touchStart;
-    if (dx > 40) prev();
-    else if (dx < -40) next();
-    setTouchStart(null);
-  };
+  function scrollByCard(direction: -1 | 1) {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const amount = Math.min(340, el.clientWidth * 0.85) * direction;
+    el.scrollBy({ left: amount, behavior: "smooth" });
+  }
 
   return (
-    <section id="testimonials" className="mx-auto max-w-7xl px-4 py-16">
-      <SectionHeading eyebrow="Why Members Love JK Holidays" align="left" />
+    <section id="testimonials" className="overflow-hidden bg-white py-16">
+      <Reveal className="mx-auto max-w-7xl px-4 text-center">
+        <h2 className="font-display text-2xl font-bold tracking-wide text-navy uppercase sm:text-3xl md:text-4xl">
+          10,000+ Families. Countless Memories.
+        </h2>
+        <p className="mt-2 text-sm text-muted-foreground sm:text-base">
+          Real people. Real holidays. Real experiences.
+        </p>
+      </Reveal>
 
-      <div
-        className="mt-8 overflow-x-clip md:hidden"
-        onTouchStart={onTouchStart}
-        onTouchEnd={onTouchEnd}
-      >
-        <div className="relative mx-auto w-full max-w-sm select-none overflow-x-clip">
-          <div className="relative overflow-hidden">
-            {testimonials.map((item, i) => {
-              const offset = (i - index + total) % total;
-              const rel = offset > total / 2 ? offset - total : offset;
-              const isActive = rel === 0;
-              if (Math.abs(rel) > 1) return null;
+      <div className="relative mx-auto mt-10 max-w-7xl px-4">
+        <div className="flex flex-col items-stretch gap-8 lg:flex-row lg:items-center lg:gap-6">
+          <Reveal delay={0.05} className="lg:w-[240px]">
+            <SocialProofStack />
+          </Reveal>
 
-              return (
-                <div
-                  key={item.name}
-                  className={cn(
-                    "inset-0 mx-3 will-change-transform transition-all duration-500 ease-out",
-                    isActive ? "relative" : "absolute top-0 right-0 left-0",
-                  )}
-                  style={{
-                    transform: `translateX(${rel * 80}%) scale(${isActive ? 1 : 0.88})`,
-                    opacity: isActive ? 1 : 0.3,
-                    zIndex: isActive ? 20 : 10,
-                    pointerEvents: isActive ? "auto" : "none",
-                  }}
-                >
-                  <div className="relative flex min-h-[220px] flex-col rounded-3xl border border-gold/20 bg-white p-6 shadow-2xl">
-                    <Quote className="absolute right-5 top-5 h-10 w-10 text-gold/20" />
-                    <Stars />
-                    <p className="mt-3 text-sm italic leading-relaxed text-muted-foreground">
-                      &ldquo;{item.quote}&rdquo;
-                    </p>
-                    <div className="mt-auto flex items-center gap-3 border-t pt-4">
-                      <div className="grid h-11 w-11 place-items-center rounded-full bg-gold-gradient font-bold text-navy-deep">
-                        {item.name.charAt(0)}
-                      </div>
-                      <div>
-                        <div className="text-sm font-semibold text-navy">
-                          {item.name}
-                        </div>
-                        <div className="text-xs text-gold">{item.plan}</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          <div className="mt-3 flex items-center justify-center gap-5">
+          <Reveal delay={0.12} className="relative min-w-0 flex-1">
             <button
               type="button"
-              aria-label="Previous testimonial"
-              onClick={prev}
-              className="grid h-9 w-9 place-items-center rounded-full bg-white text-navy shadow ring-1 ring-gold/40 hover:bg-gold-soft"
+              aria-label="Previous reviews"
+              onClick={() => scrollByCard(-1)}
+              className="absolute top-1/2 left-0 z-20 grid h-9 w-9 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-navy/10 bg-white text-navy shadow-md hover:bg-cream"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
-            <div className="flex items-center gap-1.5">
-              {testimonials.map((item, i) => (
-                <button
-                  key={item.name}
-                  type="button"
-                  aria-label={`Testimonial ${i + 1}`}
-                  onClick={() => setIndex(i)}
-                  className={cn(
-                    "h-1.5 rounded-full transition-all",
-                    i === index ? "w-5 bg-gold" : "w-1.5 bg-navy/20",
-                  )}
-                />
-              ))}
-            </div>
             <button
               type="button"
-              aria-label="Next testimonial"
-              onClick={next}
-              className="grid h-9 w-9 place-items-center rounded-full bg-white text-navy shadow ring-1 ring-gold/40 hover:bg-gold-soft"
+              aria-label="Next reviews"
+              onClick={() => scrollByCard(1)}
+              className="absolute top-1/2 right-0 z-20 grid h-9 w-9 translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-navy/10 bg-white text-navy shadow-md hover:bg-cream"
             >
               <ChevronRight className="h-4 w-4" />
             </button>
-          </div>
-        </div>
-      </div>
 
-      <div className="mt-8 hidden gap-6 md:grid md:grid-cols-3">
-        {testimonials.map((t) => (
-          <div
-            key={t.name}
-            className="rounded-xl border bg-white p-6 shadow-sm"
-          >
-            <Stars />
-            <p className="mt-3 text-sm italic text-muted-foreground">
-              &ldquo;{t.quote}&rdquo;
-            </p>
-            <div className="mt-4 flex items-center gap-3">
-              <div className="grid h-10 w-10 place-items-center rounded-full bg-gold-gradient font-bold text-navy-deep">
-                {t.name.charAt(0)}
-              </div>
-              <div>
-                <div className="text-sm font-semibold text-navy">{t.name}</div>
-                <div className="text-xs text-muted-foreground">{t.plan}</div>
-              </div>
+            <div
+              ref={scrollerRef}
+              className="flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-smooth px-2 pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            >
+              {testimonials.map((item, i) => (
+                <ReviewCard key={item.name} item={item} toneIndex={i} />
+              ))}
             </div>
-          </div>
-        ))}
+          </Reveal>
+        </div>
       </div>
     </section>
   );

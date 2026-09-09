@@ -5,6 +5,8 @@ const ResortSchema = new Schema(
     name: { type: String, required: true, trim: true },
     label: { type: String, required: true, trim: true },
     image: { type: String, required: true, trim: true },
+    photos: { type: [String], default: [] },
+    description: { type: String, default: "" },
     slug: { type: String, required: true, unique: true },
     status: { type: String, enum: ["draft", "published"], default: "draft" },
     sortOrder: { type: Number, default: 0 },

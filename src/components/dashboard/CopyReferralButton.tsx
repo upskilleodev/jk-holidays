@@ -24,15 +24,23 @@ function buildShareText(code: string, origin: string) {
   return `Join ${site.name} with my referral code ${code} and unlock premium holiday memberships. ${site.tagline}\n\nSign up: ${joinUrl}`;
 }
 
-export function CopyReferralButton({ code }: { code: string }) {
+type Props = {
+  code: string;
+  /** Hero layout: code field + copy inline, shares below */
+  variant?: "default" | "hero";
+};
+
+export function CopyReferralButton({ code, variant = "default" }: Props) {
   const [copied, setCopied] = useState(false);
-  const shareText = useMemo(() => {
-    const origin =
-      typeof window !== "undefined"
-        ? window.location.origin
-        : process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-    return buildShareText(code, origin);
-  }, [code]);
+  const origin = useMemo(() => {
+    if (typeof window !== "undefined") return window.location.origin;
+    return process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  }, []);
+  const shareText = useMemo(
+    () => buildShareText(code, origin),
+    [code, origin],
+  );
+  const joinUrl = `${origin}/signup?referral=${encodeURIComponent(code)}`;
 
   async function copyText(value: string, successMessage: string) {
     try {
@@ -47,9 +55,12 @@ export function CopyReferralButton({ code }: { code: string }) {
     }
   }
 
-  async function shareWhatsApp() {
-    const url = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
-    window.open(url, "_blank", "noopener,noreferrer");
+  function shareWhatsApp() {
+    window.open(
+      `https://wa.me/?text=${encodeURIComponent(shareText)}`,
+      "_blank",
+      "noopener,noreferrer",
+    );
     toast("Opening WhatsApp…", "info");
   }
 
@@ -59,10 +70,65 @@ export function CopyReferralButton({ code }: { code: string }) {
       "Message copied — paste it in Instagram DM or Story",
     );
     if (!ok) return;
-    // Instagram has no web share intent for custom text; open app/site after copy.
     window.setTimeout(() => {
       window.open("https://www.instagram.com/", "_blank", "noopener,noreferrer");
     }, 250);
+  }
+
+  if (variant === "hero") {
+    return (
+      <div className="w-full max-w-md space-y-3">
+        <div className="flex gap-2">
+          <input
+            readOnly
+            value={code}
+            className="input-field flex-1 bg-white text-center font-display text-lg tracking-[0.12em] text-navy"
+            aria-label="Your referral code"
+            onFocus={(e) => e.currentTarget.select()}
+          />
+          <button
+            type="button"
+            onClick={() => copyText(code, "Referral code copied")}
+            className="inline-flex h-11 shrink-0 items-center gap-1.5 rounded-lg bg-gold-gradient px-4 text-sm font-bold text-navy-deep"
+          >
+            {copied ? (
+              <>
+                <Check className="h-4 w-4" /> Copied
+              </>
+            ) : (
+              <>
+                <Copy className="h-4 w-4" /> Copy
+              </>
+            )}
+          </button>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={shareWhatsApp}
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-[#25D366] text-sm font-semibold text-white hover:bg-[#1ebe57]"
+          >
+            <MessageCircle className="h-4 w-4" />
+            WhatsApp
+          </button>
+          <button
+            type="button"
+            onClick={shareInstagram}
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-[#f58529] via-[#dd2a7b] to-[#8134af] text-sm font-semibold text-white hover:opacity-90"
+          >
+            <InstagramIcon className="h-4 w-4" />
+            Instagram
+          </button>
+        </div>
+        <button
+          type="button"
+          onClick={() => copyText(joinUrl, "Referral link copied")}
+          className="w-full text-center text-xs font-semibold text-white/80 underline-offset-2 hover:underline"
+        >
+          Copy signup link
+        </button>
+      </div>
+    );
   }
 
   return (

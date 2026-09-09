@@ -24,6 +24,19 @@ const UserSchema = new Schema(
     referredBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
     /** Admin-managed referral / wallet points balance (INR). */
     referralPoints: { type: Number, default: 0, min: 0 },
+    mobile: { type: String, default: "", trim: true },
+    dateOfBirth: { type: String, default: "", trim: true },
+    address: { type: String, default: "", trim: true },
+    language: { type: String, default: "English", trim: true },
+    currency: { type: String, default: "INR", trim: true },
+    notifyEmail: { type: Boolean, default: true },
+    notifySms: { type: Boolean, default: true },
+    notifyOffers: { type: Boolean, default: true },
+    accountStatus: {
+      type: String,
+      enum: ["active", "inactive"],
+      default: "active",
+    },
   },
   { timestamps: true }
 );

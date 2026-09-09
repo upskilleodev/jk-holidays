@@ -17,6 +17,8 @@ const createSchema = z.object({
   name: z.string().min(2),
   label: z.string().min(1),
   image: imageSchema,
+  photos: z.array(imageSchema).max(12).optional().default([]),
+  description: z.string().max(2000).optional().default(""),
   status: z.enum(["draft", "published"]).default("draft"),
   sortOrder: z.number().optional(),
 });

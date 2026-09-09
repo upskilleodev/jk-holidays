@@ -6,8 +6,13 @@ import { generateReferralCode } from "@/lib/utils";
 import { User } from "@/models/User";
 
 const createSchema = z.object({
+  name: z.string().trim().min(2).max(80).optional(),
   email: z.string().email(),
   password: z.string().min(6),
+  adminRole: z
+    .enum(["super_admin", "operations", "support"])
+    .optional()
+    .default("operations"),
 });
 
 function nameFromEmail(email: string) {
@@ -41,7 +46,8 @@ export async function POST(request: Request) {
     await connectDB();
 
     const email = body.email.toLowerCase().trim();
-    const name = nameFromEmail(email);
+    const name = body.name?.trim() || nameFromEmail(email);
+    const adminRole = body.adminRole || "operations";
     const existing = await User.findOne({ email });
 
     if (existing) {
@@ -49,9 +55,10 @@ export async function POST(request: Request) {
         return jsonError("This email is already an admin", 409);
       }
 
+      existing.name = name;
       existing.role = "admin";
       existing.passwordHash = await hashPassword(body.password);
-      existing.adminRole = "super_admin";
+      existing.adminRole = adminRole;
       existing.adminStatus = "active";
       await existing.save();
 
@@ -61,6 +68,7 @@ export async function POST(request: Request) {
           name: existing.name,
           email: existing.email,
           role: existing.role,
+          adminRole: existing.adminRole,
         },
       });
     }
@@ -75,7 +83,7 @@ export async function POST(request: Request) {
       email,
       passwordHash: await hashPassword(body.password),
       role: "admin",
-      adminRole: "super_admin",
+      adminRole,
       adminStatus: "active",
       referralCode,
       referredBy: null,
@@ -88,6 +96,7 @@ export async function POST(request: Request) {
           name: admin.name,
           email: admin.email,
           role: admin.role,
+          adminRole: admin.adminRole,
         },
       },
       201,

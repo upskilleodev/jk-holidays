@@ -22,7 +22,7 @@ export default async function AdminNotificationsPage() {
       />
       {pending > 0 ? (
         <Link
-          href="/admin/purchases"
+          href="/admin/requests"
           className="mb-4 block rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
         >
           {pending} holiday request{pending === 1 ? "" : "s"} awaiting approval

@@ -13,10 +13,21 @@ const patchSchema = z
     referralPoints: z.number().min(0).optional(),
     password: z.string().min(6).optional(),
     note: z.string().max(240).optional(),
+    accountStatus: z.enum(["active", "inactive"]).optional(),
+    name: z.string().trim().min(2).max(80).optional(),
+    mobile: z.string().trim().max(20).optional(),
   })
-  .refine((v) => v.referralPoints !== undefined || v.password !== undefined, {
-    message: "Provide referralPoints and/or password",
-  });
+  .refine(
+    (v) =>
+      v.referralPoints !== undefined ||
+      v.password !== undefined ||
+      v.accountStatus !== undefined ||
+      v.name !== undefined ||
+      v.mobile !== undefined,
+    {
+      message: "Provide at least one field to update",
+    },
+  );
 
 export async function GET(_request: Request, { params }: Params) {
   try {
@@ -98,6 +109,12 @@ export async function PATCH(request: Request, { params }: Params) {
       updates.passwordSet = true;
     }
 
+    if (body.accountStatus) {
+      user.accountStatus = body.accountStatus;
+    }
+    if (body.name) user.name = body.name;
+    if (body.mobile !== undefined) user.mobile = body.mobile;
+
     await user.save();
 
     return jsonOk({
@@ -105,8 +122,10 @@ export async function PATCH(request: Request, { params }: Params) {
         _id: user._id,
         name: user.name,
         email: user.email,
+        mobile: user.mobile || "",
         referralCode: user.referralCode,
         referralPoints: user.referralPoints || 0,
+        accountStatus: user.accountStatus || "active",
       },
       password: plainPassword,
       updates,

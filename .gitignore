@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local property photo uploads
+/public/uploads/
+
+# local design reference (not shipped)
+/dream-luxe-journeys-main/

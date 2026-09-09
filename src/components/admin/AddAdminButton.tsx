@@ -10,7 +10,12 @@ export function AddAdminButton() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [values, setValues] = useState({ email: "", password: "" });
+  const [values, setValues] = useState({
+    name: "",
+    email: "",
+    password: "",
+    adminRole: "operations",
+  });
 
   useEffect(() => {
     if (!open) return;
@@ -26,7 +31,12 @@ export function AddAdminButton() {
   }, [open]);
 
   function reset() {
-    setValues({ email: "", password: "" });
+    setValues({
+      name: "",
+      email: "",
+      password: "",
+      adminRole: "operations",
+    });
     setError("");
   }
 
@@ -98,6 +108,21 @@ export function AddAdminButton() {
             <form onSubmit={onSubmit} className="mt-5 space-y-3">
               <label className="block space-y-1.5">
                 <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-stone">
+                  Name
+                </span>
+                <input
+                  className="input-field"
+                  required
+                  minLength={2}
+                  value={values.name}
+                  onChange={(e) =>
+                    setValues({ ...values, name: e.target.value })
+                  }
+                  placeholder="Priya Kaur"
+                />
+              </label>
+              <label className="block space-y-1.5">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-stone">
                   Email
                 </span>
                 <input
@@ -111,6 +136,22 @@ export function AddAdminButton() {
                   }
                   placeholder="admin2@jkholidays.com"
                 />
+              </label>
+              <label className="block space-y-1.5">
+                <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-stone">
+                  Role
+                </span>
+                <select
+                  className="input-field"
+                  value={values.adminRole}
+                  onChange={(e) =>
+                    setValues({ ...values, adminRole: e.target.value })
+                  }
+                >
+                  <option value="super_admin">Super Admin</option>
+                  <option value="operations">Manager</option>
+                  <option value="support">Support</option>
+                </select>
               </label>
               <label className="block space-y-1.5">
                 <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-stone">

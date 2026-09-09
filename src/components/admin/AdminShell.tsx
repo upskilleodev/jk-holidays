@@ -4,11 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
+  ArrowDownToLine,
   Bell,
   Building2,
   CalendarCheck,
+  ClipboardList,
   Crown,
   ExternalLink,
+  FileBarChart2,
   Headphones,
   LayoutDashboard,
   LifeBuoy,
@@ -41,14 +44,17 @@ const links: {
   { href: "/admin/users", label: "Members", icon: Users },
   { href: "/admin/packages", label: "Membership Plans", icon: Crown },
   {
-    href: "/admin/purchases",
+    href: "/admin/requests",
     label: "Holiday Requests",
     icon: Plane,
     badgeKey: "requests",
   },
+  { href: "/admin/purchases", label: "Plan Purchases", icon: ClipboardList },
   { href: "/admin/bookings", label: "Bookings", icon: CalendarCheck },
   { href: "/admin/resorts", label: "Resorts", icon: Building2 },
   { href: "/admin/wallet", label: "Wallet & Payments", icon: Wallet },
+  { href: "/admin/withdrawals", label: "Withdrawals", icon: ArrowDownToLine },
+  { href: "/admin/reports", label: "Reports", icon: FileBarChart2 },
   {
     href: "/admin/notifications",
     label: "Notifications",
@@ -196,7 +202,8 @@ export function AdminShell({
               scope="admin"
               links={[
                 { href: "/admin", label: "Dashboard" },
-                { href: "/admin/purchases", label: "Holiday Requests" },
+                { href: "/admin/requests", label: "Holiday Requests" },
+                { href: "/admin/purchases", label: "Plan Purchases" },
                 { href: "/admin/settings", label: "Settings" },
               ]}
             />

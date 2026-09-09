@@ -11,6 +11,7 @@ import { formatINR } from "@/lib/utils";
 import { User } from "@/models/User";
 import { Package } from "@/models/Package";
 import { Purchase } from "@/models/Purchase";
+import { HolidayRequest } from "@/models/HolidayRequest";
 import { CashbackReward } from "@/models/CashbackReward";
 import { ContactMessage } from "@/models/ContactMessage";
 import { PortalStatCard } from "@/components/portal/PortalStatCard";
@@ -32,7 +33,7 @@ export default async function AdminHomePage() {
   ] = await Promise.all([
     User.countDocuments({ role: "user" }),
     Package.countDocuments(),
-    Purchase.countDocuments({ status: "pending" }),
+    HolidayRequest.countDocuments({ status: "pending" }),
     Purchase.countDocuments({ status: "active" }),
     CashbackReward.countDocuments({ status: "pending" }),
     CashbackReward.aggregate([
@@ -117,7 +118,7 @@ export default async function AdminHomePage() {
           value={String(pending)}
           sub="Awaiting approval"
           cta="REVIEW NOW"
-          ctaHref="/admin/purchases"
+          ctaHref="/admin/requests"
         />
         <PortalStatCard
           icon={Wallet}
@@ -168,7 +169,8 @@ export default async function AdminHomePage() {
           </h3>
           <div className="mt-4 grid gap-2">
             {[
-              { href: "/admin/purchases", label: "Review holiday requests" },
+              { href: "/admin/requests", label: "Review holiday requests" },
+              { href: "/admin/purchases", label: "Plan purchases" },
               { href: "/admin/packages/new", label: "Create new plan" },
               { href: "/admin/resorts", label: "Manage resorts" },
               { href: "/admin/tickets", label: "Support tickets" },

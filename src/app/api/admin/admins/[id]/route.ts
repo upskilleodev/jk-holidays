@@ -4,9 +4,23 @@ import { hashPassword, requireAdmin } from "@/lib/auth";
 import { jsonError, jsonOk, handleRouteError } from "@/lib/api";
 import { User } from "@/models/User";
 
-const updateSchema = z.object({
-  password: z.string().min(6).optional(),
-});
+const updateSchema = z
+  .object({
+    name: z.string().trim().min(2).max(80).optional(),
+    email: z.string().trim().email().max(120).optional(),
+    adminRole: z.enum(["super_admin", "operations", "support"]).optional(),
+    adminStatus: z.enum(["active", "invite_pending"]).optional(),
+    password: z.string().min(6).max(72).optional(),
+  })
+  .refine(
+    (v) =>
+      v.name !== undefined ||
+      v.email !== undefined ||
+      v.adminRole !== undefined ||
+      v.adminStatus !== undefined ||
+      v.password !== undefined,
+    { message: "Provide at least one field to update" },
+  );
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -22,12 +36,26 @@ export async function PATCH(request: Request, { params }: Params) {
       return jsonError("Admin not found", 404);
     }
 
-    if (!body.password) {
-      return jsonError("Enter a new password", 400);
+    if (body.email) {
+      const email = body.email.toLowerCase();
+      if (email !== admin.email) {
+        const taken = await User.findOne({
+          email,
+          _id: { $ne: admin._id },
+        }).select("_id");
+        if (taken) return jsonError("Email is already in use", 409);
+        admin.email = email;
+      }
     }
 
-    admin.passwordHash = await hashPassword(body.password);
-    admin.adminStatus = "active";
+    if (body.name) admin.name = body.name;
+    if (body.adminRole) admin.adminRole = body.adminRole;
+    if (body.adminStatus) admin.adminStatus = body.adminStatus;
+    if (body.password) {
+      admin.passwordHash = await hashPassword(body.password);
+      admin.adminStatus = body.adminStatus || "active";
+    }
+
     await admin.save();
 
     return jsonOk({
@@ -36,6 +64,8 @@ export async function PATCH(request: Request, { params }: Params) {
         name: admin.name,
         email: admin.email,
         role: admin.role,
+        adminRole: admin.adminRole,
+        adminStatus: admin.adminStatus,
       },
     });
   } catch (error) {

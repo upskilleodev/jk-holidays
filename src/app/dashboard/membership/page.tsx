@@ -1,101 +1,179 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Crown } from "lucide-react";
+import { Check, Crown } from "lucide-react";
 import { connectDB } from "@/lib/db";
 import { getMemberSession } from "@/lib/auth";
-import { formatINR } from "@/lib/utils";
+import { formatINR, cn } from "@/lib/utils";
+import { Package } from "@/models/Package";
 import { Purchase } from "@/models/Purchase";
 
+export const dynamic = "force-dynamic";
 export const metadata = { title: "My Membership" };
+
+function daysRemaining(from: Date, years = 2) {
+  const end = new Date(from);
+  end.setFullYear(end.getFullYear() + years);
+  return Math.max(0, Math.ceil((end.getTime() - Date.now()) / 86400000));
+}
+
+function validTillLabel(from: Date, years = 2) {
+  const end = new Date(from);
+  end.setFullYear(end.getFullYear() + years);
+  return end.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+}
 
 export default async function MembershipPage() {
   const session = await getMemberSession();
   if (!session) redirect("/login?next=/dashboard/membership");
 
   await connectDB();
-  const purchase = await Purchase.findOne({ userId: session.userId }).populate(
-    "packageId",
-  );
+  const [purchase, plans] = await Promise.all([
+    Purchase.findOne({ userId: session.userId }).populate("packageId"),
+    Package.find({ status: "published" }).sort({ sortOrder: 1, price: 1 }),
+  ]);
+
   const pkg = purchase?.packageId as
     | {
+        _id?: { toString(): string };
         title?: string;
         duration?: string;
         slug?: string;
         validity?: string;
-        destination?: string;
+        badge?: string;
       }
     | null
     | undefined;
 
+  const startDate =
+    purchase?.approvedAt || purchase?.createdAt || new Date();
+  const left = purchase ? daysRemaining(new Date(startDate)) : 0;
+  const till = purchase ? validTillLabel(new Date(startDate)) : null;
+  const currentTitle = pkg?.title || null;
+  const currentId = pkg?._id ? String(pkg._id) : null;
+  const isActive = purchase?.status === "active";
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-3xl font-bold text-navy">
-          My Membership
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Your plan details, status, and purchase information.
-        </p>
+      <h1 className="font-display text-3xl font-bold text-navy">
+        My Membership
+      </h1>
+
+      <div className="rounded-2xl bg-navy-gradient p-6 text-white shadow-sm sm:p-7">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="grid h-14 w-14 place-items-center rounded-full border-2 border-gold text-gold">
+            <Crown className="h-7 w-7" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-sm text-white/80">Current Plan</div>
+            {purchase && currentTitle ? (
+              <>
+                <div className="font-display text-2xl font-bold text-gold sm:text-3xl">
+                  {currentTitle}
+                </div>
+                <div className="mt-1 text-sm text-white/85">
+                  {isActive && till
+                    ? `Valid Till: ${till} · ${left} Days Remaining`
+                    : purchase.status === "pending"
+                      ? "Pending activation — payment collection in progress"
+                      : `Status: ${purchase.status}`}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="font-display text-2xl font-bold text-gold sm:text-3xl">
+                  No active plan
+                </div>
+                <div className="mt-1 text-sm text-white/85">
+                  Choose a membership below to get started.
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       </div>
 
-      <div className="rounded-2xl border bg-white p-6 shadow-sm">
-        {purchase && pkg ? (
-          <div className="space-y-4">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <div className="text-xs font-bold tracking-widest text-muted-foreground uppercase">
-                  Current plan
+      <h2 className="font-display text-2xl font-bold text-navy">
+        Upgrade Options
+      </h2>
+
+      {plans.length === 0 ? (
+        <div className="rounded-2xl border bg-white p-8 text-sm text-muted-foreground shadow-sm">
+          No membership plans published yet.{" "}
+          <Link href="/packages" className="font-semibold text-blue-600">
+            Browse packages
+          </Link>
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {plans.map((plan) => {
+            const features = (
+              (plan.highlights?.length ? plan.highlights : plan.inclusions) ||
+              []
+            ).slice(0, 5);
+            const isCurrent =
+              currentId === String(plan._id) ||
+              (!!currentTitle &&
+                currentTitle.toLowerCase() === plan.title.toLowerCase());
+
+            return (
+              <article
+                key={String(plan._id)}
+                className={cn(
+                  "flex flex-col rounded-2xl border bg-white p-5 shadow-sm",
+                  isCurrent && "border-gold ring-1 ring-gold/40",
+                )}
+              >
+                <div className="font-display text-xl font-bold text-navy">
+                  {plan.badge || plan.title}
                 </div>
-                <h2 className="mt-2 font-display text-2xl font-bold text-navy">
-                  {pkg.title}
-                </h2>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {pkg.duration}
-                  {pkg.destination ? ` · ${pkg.destination}` : ""}
-                </p>
-              </div>
-              <div className="grid h-14 w-14 place-items-center rounded-full border-2 border-gold text-gold">
-                <Crown className="h-6 w-6" />
-              </div>
-            </div>
-            <span className={`status-pill status-${purchase.status}`}>
-              {purchase.status}
-            </span>
-            <div className="font-display text-3xl font-bold text-navy">
-              {formatINR(purchase.priceSnapshot)}
-            </div>
-            {purchase.referralCodeUsed ? (
-              <p className="text-sm text-muted-foreground">
-                Referral used: {purchase.referralCodeUsed}
-              </p>
-            ) : null}
-            {purchase.status === "pending" ? (
-              <p className="text-sm text-muted-foreground">
-                Request received. We&apos;ll collect payment and activate your
-                membership soon.
-              </p>
-            ) : null}
-            {pkg.slug ? (
-              <Link href={`/packages/${pkg.slug}`} className="btn-navy mt-2">
-                View plan
-              </Link>
-            ) : null}
-          </div>
-        ) : (
-          <div>
-            <h2 className="font-display text-2xl font-bold text-navy">
-              No membership yet
-            </h2>
-            <p className="mt-3 text-sm text-muted-foreground">
-              Browse membership plans and submit one purchase request to get
-              started.
-            </p>
-            <Link href="/packages" className="btn-primary mt-5 inline-flex">
-              Explore membership plans
-            </Link>
-          </div>
-        )}
-      </div>
+                <div className="mt-2 font-display text-2xl font-bold text-gold">
+                  {formatINR(plan.price)}
+                </div>
+                <div className="mt-1 text-xs text-muted-foreground">
+                  {[plan.duration, plan.validity].filter(Boolean).join(" · ")}
+                </div>
+
+                <ul className="mt-4 flex-1 space-y-2 text-sm text-navy">
+                  {features.length > 0 ? (
+                    features.map((f: string) => (
+                      <li key={f} className="flex gap-2">
+                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
+                        <span>{f}</span>
+                      </li>
+                    ))
+                  ) : (
+                    <li className="flex gap-2">
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
+                      <span>Premium resort stay benefits</span>
+                    </li>
+                  )}
+                </ul>
+
+                {isCurrent ? (
+                  <button
+                    type="button"
+                    disabled
+                    className="mt-5 inline-flex h-11 w-full items-center justify-center rounded-lg bg-navy px-4 text-sm font-bold text-white opacity-90"
+                  >
+                    Current Plan
+                  </button>
+                ) : (
+                  <Link
+                    href={`/packages/${plan.slug}`}
+                    className="mt-5 inline-flex h-11 w-full items-center justify-center rounded-lg bg-navy px-4 text-sm font-bold text-white hover:bg-navy-soft"
+                  >
+                    {purchase ? "Upgrade" : "Choose Plan"}
+                  </Link>
+                )}
+              </article>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

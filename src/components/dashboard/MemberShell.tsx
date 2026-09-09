@@ -47,7 +47,7 @@ const nav = [
     href: "/dashboard/notifications",
     label: "Notifications",
     icon: Bell,
-    badge: 2,
+    badge: 3,
   },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ] as const;
@@ -186,7 +186,7 @@ export function MemberShell({
             >
               <Bell className="h-5 w-5" />
               <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[9px] font-bold">
-                2
+                3
               </span>
             </Link>
             <ProfileMenu

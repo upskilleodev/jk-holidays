@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
-import { Purchase } from "@/models/Purchase";
+import { HolidayRequest } from "@/models/HolidayRequest";
 import { ContactMessage } from "@/models/ContactMessage";
 import { AdminShell } from "@/components/admin/AdminShell";
 
@@ -15,8 +15,8 @@ export default async function AdminPanelLayout({
 
   await connectDB();
   const [pendingRequests, openTickets] = await Promise.all([
-    Purchase.countDocuments({ status: "pending" }),
-    ContactMessage.countDocuments(),
+    HolidayRequest.countDocuments({ status: "pending" }),
+    ContactMessage.countDocuments({ ticketStatus: { $ne: "resolved" } }),
   ]);
 
   return (

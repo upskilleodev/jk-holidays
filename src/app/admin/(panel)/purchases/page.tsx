@@ -15,7 +15,7 @@ export default async function AdminPurchasesPage() {
   return (
     <div>
       <div className="eyebrow !text-stone">Operations</div>
-      <h1 className="mt-2 page-title">Holiday Requests</h1>
+      <h1 className="mt-2 page-title">Plan Purchases</h1>
       <p className="mt-3 text-sm text-stone leading-relaxed">
         Collect payment manually, then approve to activate the membership plan.
       </p>

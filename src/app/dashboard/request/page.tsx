@@ -1,16 +1,29 @@
-import { PortalPlaceholder } from "@/components/portal/PortalPlaceholder";
+import { Suspense } from "react";
+import { HolidayRequestForm } from "@/components/dashboard/HolidayRequestForm";
 
-export const metadata = {
-  title: "Request Holiday",
-};
+export const metadata = { title: "Request Holiday" };
 
-export default function Page() {
+export default function RequestHolidayPage() {
   return (
-    <PortalPlaceholder
-      title="Request Holiday"
-      description="Submit a holiday request against your membership entitlement."
-      actionHref="/dashboard/holidays"
-      actionLabel="See available holidays"
-    />
+    <div className="space-y-6">
+      <div>
+        <h1 className="font-display text-3xl font-bold text-navy">
+          Request Holiday
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Book your next getaway in a few simple steps.
+        </p>
+      </div>
+
+      <Suspense
+        fallback={
+          <div className="rounded-2xl border bg-white p-6 text-sm text-muted-foreground">
+            Loading request form…
+          </div>
+        }
+      >
+        <HolidayRequestForm />
+      </Suspense>
+    </div>
   );
 }
