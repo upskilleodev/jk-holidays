@@ -13,6 +13,13 @@ export const site = {
     facebook: "https://facebook.com",
     youtube: "https://youtube.com",
   },
+  payment: {
+    accountHolder: "J K Holidays",
+    accountNumber: "925020058761131",
+    ifsc: "UTIB0005411",
+    bankName: "Axis Bank",
+    qrImage: "/assets/payment-qr.jpg",
+  },
 };
 
 export const destinations = [

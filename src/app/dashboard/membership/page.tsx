@@ -6,6 +6,7 @@ import { getMemberSession } from "@/lib/auth";
 import { formatINR, cn } from "@/lib/utils";
 import { Package } from "@/models/Package";
 import { Purchase } from "@/models/Purchase";
+import { PaymentInstructions } from "@/components/packages/PaymentInstructions";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "My Membership" };
@@ -44,6 +45,7 @@ export default async function MembershipPage() {
         slug?: string;
         validity?: string;
         badge?: string;
+        price?: number;
       }
     | null
     | undefined;
@@ -55,6 +57,8 @@ export default async function MembershipPage() {
   const currentTitle = pkg?.title || null;
   const currentId = pkg?._id ? String(pkg._id) : null;
   const isActive = purchase?.status === "active";
+  const isPending = purchase?.status === "pending";
+  const payAmount = purchase?.priceSnapshot || pkg?.price || null;
 
   return (
     <div className="space-y-6">
@@ -77,8 +81,8 @@ export default async function MembershipPage() {
                 <div className="mt-1 text-sm text-white/85">
                   {isActive && till
                     ? `Valid Till: ${till} · ${left} Days Remaining`
-                    : purchase.status === "pending"
-                      ? "Pending activation — payment collection in progress"
+                    : isPending
+                      ? "Pending activation — complete payment below"
                       : `Status: ${purchase.status}`}
                 </div>
               </>
@@ -95,6 +99,10 @@ export default async function MembershipPage() {
           </div>
         </div>
       </div>
+
+      {isPending ? (
+        <PaymentInstructions amount={payAmount} planTitle={currentTitle} />
+      ) : null}
 
       <h2 className="font-display text-2xl font-bold text-navy">
         Upgrade Options
@@ -159,7 +167,7 @@ export default async function MembershipPage() {
                     disabled
                     className="mt-5 inline-flex h-11 w-full items-center justify-center rounded-lg bg-navy px-4 text-sm font-bold text-white opacity-90"
                   >
-                    Current Plan
+                    {isPending ? "Awaiting payment review" : "Current Plan"}
                   </button>
                 ) : (
                   <Link

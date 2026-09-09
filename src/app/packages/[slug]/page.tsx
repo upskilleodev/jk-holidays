@@ -94,6 +94,8 @@ export default async function PackageDetailPage({ params }: Props) {
               <PurchaseRequestButton
                 packageId={String(pkg._id)}
                 packageSlug={pkg.slug}
+                packageTitle={pkg.title}
+                packagePrice={pkg.price}
                 isLoggedIn={Boolean(session && session.role === "user")}
                 hasPurchase={Boolean(purchase)}
                 purchaseStatus={purchase?.status || null}
@@ -101,8 +103,8 @@ export default async function PackageDetailPage({ params }: Props) {
             </Suspense>
 
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Purchase is inquiry-based. After you request, admin collects
-              payment manually and activates your membership plan.
+              After you request, pay via UPI QR or bank transfer. Admin reviews
+              payment and activates your membership.
             </p>
           </aside>
 

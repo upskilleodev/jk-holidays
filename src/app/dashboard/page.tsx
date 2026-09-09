@@ -127,6 +127,25 @@ export default async function DashboardPage() {
         </div>
       </div>
 
+      {purchase?.status === "pending" ? (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4">
+          <div>
+            <div className="font-semibold text-amber-950">
+              Complete membership payment
+            </div>
+            <p className="mt-0.5 text-sm text-amber-900/80">
+              Scan QR or use bank transfer — then admin will activate your plan.
+            </p>
+          </div>
+          <Link
+            href="/dashboard/membership"
+            className="inline-flex h-10 items-center justify-center rounded-lg bg-navy px-4 text-sm font-bold text-white"
+          >
+            Pay now
+          </Link>
+        </div>
+      ) : null}
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-2xl bg-navy-gradient p-5 text-white shadow-sm">
           <div className="text-sm text-white/80">My Membership</div>

@@ -3,10 +3,13 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { startNavigation, toast } from "@/components/feedback/toast";
 import { FormEvent, useEffect, useState } from "react";
+import { PaymentInstructions } from "@/components/packages/PaymentInstructions";
 
 type Props = {
   packageId: string;
   packageSlug: string;
+  packageTitle?: string;
+  packagePrice?: number;
   isLoggedIn: boolean;
   hasPurchase: boolean;
   purchaseStatus?: string | null;
@@ -15,6 +18,8 @@ type Props = {
 export function PurchaseRequestButton({
   packageId,
   packageSlug,
+  packageTitle,
+  packagePrice,
   isLoggedIn,
   hasPurchase,
   purchaseStatus,
@@ -22,10 +27,10 @@ export function PurchaseRequestButton({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
+  const [showPayment, setShowPayment] = useState(false);
   const [referralCode, setReferralCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   useEffect(() => {
     if (searchParams.get("request") === "1" && isLoggedIn && !hasPurchase) {
@@ -33,11 +38,16 @@ export function PurchaseRequestButton({
     }
   }, [searchParams, isLoggedIn, hasPurchase]);
 
+  useEffect(() => {
+    if (hasPurchase && purchaseStatus === "pending") {
+      setShowPayment(true);
+    }
+  }, [hasPurchase, purchaseStatus]);
+
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     setLoading(true);
     setError("");
-    setSuccess("");
 
     const res = await fetch("/api/purchases", {
       method: "POST",
@@ -54,12 +64,41 @@ export function PurchaseRequestButton({
       return;
     }
 
-    const message =
-      "Purchase request submitted. Our team will contact you for payment.";
-    setSuccess(message);
-    toast(message, "success");
+    toast("Request submitted — complete payment below", "success");
     setOpen(false);
+    setShowPayment(true);
     router.refresh();
+  }
+
+  if (hasPurchase && purchaseStatus === "pending") {
+    return (
+      <div className="space-y-4">
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+          <div className="text-sm font-semibold text-amber-900">
+            Purchase pending activation
+          </div>
+          <p className="mt-1 text-xs text-amber-800/90">
+            Pay using the QR or bank details below. Admin will review and
+            activate your membership.
+          </p>
+        </div>
+        <PaymentInstructions
+          amount={packagePrice}
+          planTitle={packageTitle}
+          compact
+        />
+        <button
+          type="button"
+          onClick={() => {
+            startNavigation("Opening membership…");
+            router.push("/dashboard/membership");
+          }}
+          className="btn-dark w-full"
+        >
+          View in Dashboard
+        </button>
+      </div>
+    );
   }
 
   if (hasPurchase) {
@@ -72,7 +111,8 @@ export function PurchaseRequestButton({
           {purchaseStatus}
         </div>
         <p className="mt-2 text-sm text-stone">
-          Each member can hold one membership plan purchase. Visit your dashboard for details.
+          Each member can hold one membership plan purchase. Visit your
+          dashboard for details.
         </p>
         <button
           type="button"
@@ -120,17 +160,35 @@ export function PurchaseRequestButton({
   }
 
   return (
-    <div>
-      {!open ? (
-        <button type="button" className="btn-primary w-full" onClick={() => setOpen(true)}>
+    <div className="space-y-4">
+      {showPayment ? (
+        <PaymentInstructions
+          amount={packagePrice}
+          planTitle={packageTitle}
+          compact
+        />
+      ) : null}
+
+      {!showPayment && !open ? (
+        <button
+          type="button"
+          className="btn-primary w-full"
+          onClick={() => setOpen(true)}
+        >
           Request Purchase
         </button>
-      ) : (
-        <form onSubmit={onSubmit} className="border border-mist/70 bg-white p-5 space-y-4">
+      ) : null}
+
+      {open && !showPayment ? (
+        <form
+          onSubmit={onSubmit}
+          className="space-y-4 border border-mist/70 bg-white p-5"
+        >
           <div>
             <div className="font-display text-2xl">Confirm purchase request</div>
             <p className="mt-2 text-sm text-stone">
-              Payment is collected manually. Admin will approve and activate your membership plan.
+              After you submit, you&apos;ll see QR and bank details to complete
+              payment. Admin reviews and activates your plan.
             </p>
           </div>
           <input
@@ -141,7 +199,11 @@ export function PurchaseRequestButton({
           />
           {error ? <p className="text-sm text-danger">{error}</p> : null}
           <div className="flex gap-3">
-            <button type="submit" disabled={loading} className="btn-primary flex-1">
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary flex-1"
+            >
               {loading ? "Submitting..." : "Submit Request"}
             </button>
             <button
@@ -153,8 +215,7 @@ export function PurchaseRequestButton({
             </button>
           </div>
         </form>
-      )}
-      {success ? <p className="mt-3 text-sm text-success">{success}</p> : null}
+      ) : null}
     </div>
   );
 }
