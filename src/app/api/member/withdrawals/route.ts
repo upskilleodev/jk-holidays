@@ -25,7 +25,6 @@ export async function GET() {
 const createSchema = z.object({
   amount: z.number().min(500, "Minimum withdrawal is ₹500"),
   method: z.enum(["bank", "upi"]),
-  accountDetails: z.string().trim().min(3).max(120),
   remarks: z.string().trim().max(240).optional().default(""),
 });
 
@@ -39,6 +38,16 @@ export async function POST(request: Request) {
 
     const user = await User.findById(session.userId);
     if (!user || user.role !== "user") return jsonError("Unauthorized", 401);
+
+    const bank = user.bankAccount;
+    const upiId = user.upiId || "";
+
+    if (body.method === "bank" && !bank?.accountNumber) {
+      return jsonError("Add your bank account details before withdrawing", 400);
+    }
+    if (body.method === "upi" && !upiId) {
+      return jsonError("Add your UPI ID before withdrawing", 400);
+    }
 
     const balance = user.referralPoints || 0;
     const pendingHeld = await Withdrawal.aggregate([
@@ -60,11 +69,35 @@ export async function POST(request: Request) {
       );
     }
 
+    const accountDetails =
+      body.method === "bank"
+        ? [
+            bank.accountHolderName,
+            `A/c ${bank.accountNumber}`,
+            bank.bankName,
+            bank.branch,
+            bank.ifsc,
+          ]
+            .filter(Boolean)
+            .join(" · ")
+        : upiId;
+
     const withdrawal = await Withdrawal.create({
       userId: user._id,
       amount: Math.round(body.amount),
       method: body.method,
-      accountDetails: body.accountDetails,
+      accountDetails,
+      bank:
+        body.method === "bank"
+          ? {
+              accountNumber: bank.accountNumber,
+              accountHolderName: bank.accountHolderName,
+              bankName: bank.bankName,
+              branch: bank.branch || "",
+              ifsc: bank.ifsc,
+            }
+          : undefined,
+      upiId: body.method === "upi" ? upiId : "",
       remarks: body.remarks || "",
       status: "pending",
     });

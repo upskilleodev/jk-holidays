@@ -218,8 +218,8 @@ export function AdminHolidayRequestsPanel({
         />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_400px]">
-        <div className="rounded-2xl border bg-white p-5 shadow-sm">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] xl:grid-cols-[minmax(0,1fr)_400px]">
+        <div className="min-w-0 rounded-2xl border bg-white p-5 shadow-sm">
           <div className="relative">
             <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
@@ -292,7 +292,7 @@ export function AdminHolidayRequestsPanel({
           </div>
         </div>
 
-        <div className="rounded-2xl border bg-white p-5 shadow-sm lg:min-h-[420px]">
+        <div className="min-w-0 rounded-2xl border bg-white p-5 shadow-sm break-words lg:min-h-[420px]">
           {detail ? (
             <div className="space-y-4">
               <div className="flex items-start justify-between gap-3">

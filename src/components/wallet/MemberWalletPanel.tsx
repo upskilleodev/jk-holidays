@@ -8,12 +8,18 @@ import {
   Clock,
   Headphones,
   IndianRupee,
+  Pencil,
   Shield,
   TrendingUp,
   Wallet,
   Zap,
 } from "lucide-react";
 import { toast } from "@/components/feedback/toast";
+import {
+  BankAccountForm,
+  maskAccount,
+  type BankDetails,
+} from "@/components/wallet/BankAccountForm";
 import { cn, formatINR } from "@/lib/utils";
 
 export type WalletTxn = {
@@ -45,6 +51,7 @@ type Props = {
   pendingAmount: number;
   transactions: WalletTxn[];
   withdrawals: WalletWithdrawal[];
+  bank: BankDetails;
 };
 
 export function MemberWalletPanel({
@@ -54,18 +61,46 @@ export function MemberWalletPanel({
   pendingAmount,
   transactions,
   withdrawals,
+  bank: initialBank,
 }: Props) {
   const router = useRouter();
   const [method, setMethod] = useState<"bank" | "upi">("bank");
   const [amount, setAmount] = useState("");
-  const [accountDetails, setAccountDetails] = useState("");
   const [remarks, setRemarks] = useState("");
   const [loading, setLoading] = useState(false);
   const [showAllTx, setShowAllTx] = useState(false);
   const [focus, setFocus] = useState<"tx" | "history" | "pending">("tx");
+  const [bank, setBank] = useState<BankDetails>(initialBank);
+  const [editingBank, setEditingBank] = useState(false);
+  const [upiDraft, setUpiDraft] = useState(initialBank.upiId);
+  const [savingUpi, setSavingUpi] = useState(false);
 
   const available = Math.max(0, balance - pendingAmount);
   const visibleTx = showAllTx ? transactions : transactions.slice(0, 6);
+  const hasBank = Boolean(bank.accountNumber);
+
+  async function saveUpi() {
+    const value = upiDraft.trim();
+    if (!value) {
+      toast("Enter your UPI ID", "error");
+      return;
+    }
+    setSavingUpi(true);
+    const res = await fetch("/api/member/bank-account", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type: "upi", upiId: value }),
+    });
+    const data = await res.json().catch(() => ({}));
+    setSavingUpi(false);
+
+    if (!res.ok) {
+      toast(data.error || "Could not save UPI ID", "error");
+      return;
+    }
+    setBank(data.bank as BankDetails);
+    toast("UPI ID saved", "success");
+  }
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -78,11 +113,13 @@ export function MemberWalletPanel({
       toast(`Available to withdraw: ${formatINR(available)}`, "error");
       return;
     }
-    if (!accountDetails.trim()) {
-      toast(
-        method === "bank" ? "Enter bank account details" : "Enter UPI ID",
-        "error",
-      );
+    if (method === "bank" && !hasBank) {
+      toast("Add your bank account details first", "error");
+      setEditingBank(true);
+      return;
+    }
+    if (method === "upi" && !bank.upiId) {
+      toast("Save your UPI ID first", "error");
       return;
     }
 
@@ -93,7 +130,6 @@ export function MemberWalletPanel({
       body: JSON.stringify({
         amount: value,
         method,
-        accountDetails: accountDetails.trim(),
         remarks: remarks.trim(),
       }),
     });
@@ -169,7 +205,7 @@ export function MemberWalletPanel({
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="rounded-2xl border bg-white p-5 shadow-sm lg:col-span-2">
+        <div className="min-w-0 rounded-2xl border bg-white p-5 shadow-sm lg:col-span-2">
           <div className="flex items-center justify-between gap-3">
             <h3 className="font-display text-lg font-bold text-navy">
               {focus === "history"
@@ -359,21 +395,71 @@ export function MemberWalletPanel({
           </div>
 
           <div className="mt-4 space-y-3">
-            <div>
-              <label className="text-xs font-semibold text-navy">
-                {method === "bank" ? "Bank Details" : "UPI ID"}
-              </label>
-              <input
-                className="input-field mt-1"
-                value={accountDetails}
-                onChange={(e) => setAccountDetails(e.target.value)}
-                placeholder={
-                  method === "bank"
-                    ? "Select Bank Account / IFSC"
-                    : "yourid@upi"
-                }
-              />
-            </div>
+            {method === "bank" ? (
+              <div>
+                <div className="flex items-center justify-between text-xs font-semibold text-navy">
+                  <span>Bank Details</span>
+                  <button
+                    type="button"
+                    onClick={() => setEditingBank(true)}
+                    className="inline-flex items-center gap-1 text-blue-600 hover:underline"
+                  >
+                    <Pencil className="h-3 w-3" />
+                    {hasBank ? "Update Bank" : "Add Bank"}
+                  </button>
+                </div>
+                {hasBank ? (
+                  <dl className="mt-1 space-y-1.5 rounded-lg border bg-muted/40 p-3 text-xs">
+                    <BankRow
+                      label="Account Number"
+                      value={maskAccount(bank.accountNumber)}
+                    />
+                    <BankRow
+                      label="Account Holder Name"
+                      value={bank.accountHolderName}
+                    />
+                    <BankRow label="Bank Name" value={bank.bankName} />
+                    {bank.branch ? (
+                      <BankRow label="Branch" value={bank.branch} />
+                    ) : null}
+                    <BankRow label="IFSC code" value={bank.ifsc} />
+                  </dl>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setEditingBank(true)}
+                    className="mt-1 flex h-11 w-full items-center justify-center rounded-lg border border-dashed text-sm text-muted-foreground hover:border-gold hover:text-navy"
+                  >
+                    Add bank account details
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div>
+                <label className="text-xs font-semibold text-navy">UPI ID</label>
+                <div className="mt-1 flex gap-2">
+                  <input
+                    className="input-field"
+                    value={upiDraft}
+                    onChange={(e) => setUpiDraft(e.target.value)}
+                    placeholder="yourid@upi"
+                  />
+                  <button
+                    type="button"
+                    onClick={saveUpi}
+                    disabled={savingUpi || upiDraft.trim() === bank.upiId}
+                    className="shrink-0 rounded-lg border px-3 text-xs font-bold text-navy disabled:opacity-50"
+                  >
+                    {savingUpi ? "Saving…" : "Save"}
+                  </button>
+                </div>
+                {bank.upiId ? (
+                  <p className="mt-1 text-[11px] text-muted-foreground">
+                    Payouts go to {bank.upiId}
+                  </p>
+                ) : null}
+              </div>
+            )}
             <div>
               <div className="flex items-center justify-between text-xs font-semibold text-navy">
                 <span>Withdrawal Amount</span>
@@ -455,6 +541,23 @@ export function MemberWalletPanel({
           </div>
         ))}
       </div>
+
+      {editingBank ? (
+        <BankAccountForm
+          bank={bank}
+          onClose={() => setEditingBank(false)}
+          onSaved={setBank}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+function BankRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-start justify-between gap-3">
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className="break-all text-right font-semibold text-navy">{value}</dd>
     </div>
   );
 }

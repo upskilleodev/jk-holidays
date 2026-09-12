@@ -19,7 +19,7 @@ export default async function WalletPage() {
 
   await connectDB();
   const user = await User.findById(session.userId).select(
-    "name referralPoints referralCode",
+    "name referralPoints referralCode bankAccount upiId",
   );
   if (!user) redirect("/login?next=/dashboard/wallet");
 
@@ -136,6 +136,14 @@ export default async function WalletPage() {
       pendingAmount={pendingAmount}
       transactions={transactions}
       withdrawals={withdrawalRows}
+      bank={{
+        accountNumber: user.bankAccount?.accountNumber || "",
+        accountHolderName: user.bankAccount?.accountHolderName || "",
+        bankName: user.bankAccount?.bankName || "",
+        branch: user.bankAccount?.branch || "",
+        ifsc: user.bankAccount?.ifsc || "",
+        upiId: user.upiId || "",
+      }}
     />
   );
 }

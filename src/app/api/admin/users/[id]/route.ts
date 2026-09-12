@@ -87,17 +87,22 @@ export async function PATCH(request: Request, { params }: Params) {
       user.referralPoints = next;
 
       if (delta !== 0) {
-        await CashbackReward.create({
-          referrerUserId: user._id,
-          referredUserId: null,
-          purchaseId: null,
-          amount: Math.abs(delta),
-          status: delta > 0 ? "approved" : "cancelled",
-          source: "manual",
-          note:
-            body.note?.trim() ||
-            `Admin set referral points from ${previous} to ${next}`,
-        });
+        try {
+          await CashbackReward.create({
+            referrerUserId: user._id,
+            referredUserId: null,
+            purchaseId: null,
+            amount: Math.abs(delta),
+            status: delta > 0 ? "approved" : "cancelled",
+            source: "manual",
+            note:
+              body.note?.trim() ||
+              `Admin set referral points from ${previous} to ${next}`,
+          });
+        } catch (ledgerError) {
+          // A ledger write must never block the balance update itself.
+          console.error("Cashback ledger entry failed", ledgerError);
+        }
       }
       updates.referralPoints = next;
     }

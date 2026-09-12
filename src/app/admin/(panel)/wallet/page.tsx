@@ -166,7 +166,7 @@ export default async function AdminWalletPage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="rounded-2xl border bg-white p-5 shadow-sm lg:col-span-2">
+        <div className="min-w-0 rounded-2xl border bg-white p-5 shadow-sm lg:col-span-2">
           <div className="flex items-center justify-between gap-3">
             <h3 className="font-display text-lg font-bold text-navy">
               Recent Transactions

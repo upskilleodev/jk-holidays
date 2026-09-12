@@ -37,6 +37,15 @@ const UserSchema = new Schema(
       enum: ["active", "inactive"],
       default: "active",
     },
+    /** Payout destination used for wallet withdrawals. */
+    bankAccount: {
+      accountNumber: { type: String, default: "", trim: true },
+      accountHolderName: { type: String, default: "", trim: true },
+      bankName: { type: String, default: "", trim: true },
+      branch: { type: String, default: "", trim: true },
+      ifsc: { type: String, default: "", trim: true, uppercase: true },
+    },
+    upiId: { type: String, default: "", trim: true },
   },
   { timestamps: true }
 );
