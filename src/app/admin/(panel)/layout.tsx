@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { getAdminSession } from "@/lib/auth";
 import { connectDB } from "@/lib/db";
+import { getSiteContact } from "@/lib/site-settings";
+import { SiteContactProvider } from "@/components/providers/SiteContactProvider";
 import { HolidayRequest } from "@/models/HolidayRequest";
 import { ContactMessage } from "@/models/ContactMessage";
 import { AdminShell } from "@/components/admin/AdminShell";
@@ -14,21 +16,24 @@ export default async function AdminPanelLayout({
   if (!session) redirect("/login?tab=admin");
 
   await connectDB();
-  const [pendingRequests, openTickets] = await Promise.all([
+  const [pendingRequests, openTickets, contact] = await Promise.all([
     HolidayRequest.countDocuments({ status: "pending" }),
     ContactMessage.countDocuments({ ticketStatus: { $ne: "resolved" } }),
+    getSiteContact(),
   ]);
 
   return (
-    <AdminShell
-      name={session.name}
-      badges={{
-        requests: pendingRequests,
-        notifications: Math.min(openTickets, 12) || undefined,
-        tickets: Math.min(openTickets, 99) || undefined,
-      }}
-    >
-      {children}
-    </AdminShell>
+    <SiteContactProvider contact={contact}>
+      <AdminShell
+        name={session.name}
+        badges={{
+          requests: pendingRequests,
+          notifications: Math.min(openTickets, 12) || undefined,
+          tickets: Math.min(openTickets, 99) || undefined,
+        }}
+      >
+        {children}
+      </AdminShell>
+    </SiteContactProvider>
   );
 }

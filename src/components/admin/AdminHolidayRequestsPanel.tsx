@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { toast } from "@/components/feedback/toast";
 import { cn } from "@/lib/utils";
-import { site } from "@/lib/site";
+import { useSiteContact } from "@/components/providers/SiteContactProvider";
 
 export type AdminHolidayRequestRow = {
   id: string;
@@ -98,6 +98,7 @@ export function AdminHolidayRequestsPanel({
   requests: AdminHolidayRequestRow[];
 }) {
   const router = useRouter();
+  const contact = useSiteContact();
   const [q, setQ] = useState("");
   const [statusFilter, setStatusFilter] = useState<
     "all" | AdminHolidayRequestRow["status"]
@@ -407,10 +408,10 @@ export function AdminHolidayRequestsPanel({
               </div>
 
               <a
-                href={`tel:${site.phone.replace(/\s+/g, "")}`}
+                href={`tel:${contact.phone.replace(/\s+/g, "")}`}
                 className="block text-center text-xs font-semibold text-blue-600 hover:underline"
               >
-                Call support line {site.phone}
+                Call support line {contact.phone}
               </a>
             </div>
           ) : (

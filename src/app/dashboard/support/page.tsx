@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { Headphones, Phone } from "lucide-react";
-import { site } from "@/lib/site";
+import { getSiteContact } from "@/lib/site-settings";
 import { SupportTicketForm } from "@/components/dashboard/SupportTicketForm";
 
 export const metadata = { title: "Travel Support" };
 
-const telHref = `tel:${site.phone.replace(/\s+/g, "")}`;
+export default async function SupportPage() {
+  const contact = await getSiteContact();
+  const telHref = `tel:${contact.phone.replace(/\s+/g, "")}`;
 
-export default function SupportPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
@@ -36,7 +37,7 @@ export default function SupportPage() {
             <div className="text-sm text-muted-foreground">
               Call{" "}
               <a href={telHref} className="font-medium text-navy underline-offset-2 hover:underline">
-                {site.phone}
+                {contact.phone}
               </a>{" "}
               or submit a ticket
             </div>
@@ -51,7 +52,7 @@ export default function SupportPage() {
             className="inline-flex h-9 items-center gap-2 rounded-md border border-navy/15 bg-white px-4 text-sm font-semibold text-navy"
           >
             <Phone className="h-4 w-4 text-gold" />
-            Call {site.phone}
+            Call {contact.phone}
           </a>
           <Link
             href="/contact"

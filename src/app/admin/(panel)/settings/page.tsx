@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+import { SiteContactForm } from "@/components/admin/SiteContactForm";
+import { getSiteContact } from "@/lib/site-settings";
 import { site } from "@/lib/site";
 
+export const dynamic = "force-dynamic";
 export const metadata = { title: "Settings" };
 
 const items = [
@@ -27,18 +30,17 @@ const items = [
   },
 ];
 
-export default function AdminSettingsPage() {
+export default async function AdminSettingsPage() {
+  const contact = await getSiteContact();
+
   return (
     <div>
       <AdminPageHeader
         title="Settings"
         description="Quick links for brand ops and program configuration."
       />
-      <div className="mb-4 mobile-card text-sm">
-        <div className="font-semibold text-navy">{site.name}</div>
-        <div className="mt-1 text-muted-foreground">{site.email}</div>
-        <div className="text-muted-foreground">{site.phone}</div>
-      </div>
+      <div className="mb-4 text-sm font-semibold text-navy">{site.name}</div>
+      <SiteContactForm initial={contact} />
       <div className="grid gap-3 md:grid-cols-2">
         {items.map((item) => (
           <Link

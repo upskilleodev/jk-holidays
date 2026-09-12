@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { site } from "@/lib/site";
+import {
+  contactDigits,
+  useSiteContact,
+} from "@/components/providers/SiteContactProvider";
 
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
@@ -18,7 +21,7 @@ function WhatsAppIcon({ className }: { className?: string }) {
 
 export function WhatsAppFab() {
   const [hidden, setHidden] = useState(false);
-  const phone = site.phone.replace(/\D/g, "");
+  const phone = contactDigits(useSiteContact().phone);
 
   useEffect(() => {
     const sync = () => {

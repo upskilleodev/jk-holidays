@@ -6,6 +6,7 @@ import { Check, Copy, MessageCircle, QrCode, Landmark } from "lucide-react";
 import { site } from "@/lib/site";
 import { cn, formatINR } from "@/lib/utils";
 import { toast } from "@/components/feedback/toast";
+import { useSiteContact } from "@/components/providers/SiteContactProvider";
 
 function whatsappUrl(phone: string, text: string) {
   const digits = phone.replace(/\D/g, "");
@@ -28,6 +29,7 @@ export function PaymentInstructions({
   const [tab, setTab] = useState<"scan" | "bank">("scan");
   const [copied, setCopied] = useState<string | null>(null);
   const { payment } = site;
+  const contact = useSiteContact();
 
   const waText = [
     `Hi JK Holidays, I have paid for${planTitle ? ` ${planTitle}` : " my membership"}${amount ? ` (${formatINR(amount)})` : ""}.`,
@@ -164,13 +166,13 @@ export function PaymentInstructions({
         )}
 
         <a
-          href={whatsappUrl(site.phone, waText)}
+          href={whatsappUrl(contact.phone, waText)}
           target="_blank"
           rel="noreferrer"
           className="mt-5 inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-[#25D366] text-sm font-bold text-white hover:brightness-95"
         >
           <MessageCircle className="h-4 w-4" />
-          WhatsApp us · {site.phone}
+          WhatsApp us · {contact.phone}
         </a>
         <p className="mt-3 text-center text-[11px] leading-relaxed text-muted-foreground">
           After payment, our team reviews and activates your plan. Message us on

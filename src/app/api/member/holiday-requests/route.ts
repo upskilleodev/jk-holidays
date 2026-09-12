@@ -2,6 +2,7 @@ import { z } from "zod";
 import { connectDB } from "@/lib/db";
 import { getMemberSession } from "@/lib/auth";
 import { jsonError, jsonOk, handleRouteError } from "@/lib/api";
+import { getMembershipStatus, membershipBlockMessage } from "@/lib/membership";
 import { HolidayRequest } from "@/models/HolidayRequest";
 
 const travellerSchema = z.object({
@@ -56,6 +57,11 @@ export async function POST(request: Request) {
   try {
     const session = await getMemberSession();
     if (!session) return jsonError("Unauthorized", 401);
+
+    const membership = await getMembershipStatus(session.userId);
+    if (membership !== "active") {
+      return jsonError(membershipBlockMessage(membership), 403);
+    }
 
     const body = createSchema.parse(await request.json());
     await connectDB();

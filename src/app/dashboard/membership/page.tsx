@@ -4,28 +4,13 @@ import { Check, Crown } from "lucide-react";
 import { connectDB } from "@/lib/db";
 import { getMemberSession } from "@/lib/auth";
 import { formatINR, cn } from "@/lib/utils";
+import { getMembershipValidity } from "@/lib/membership";
 import { Package } from "@/models/Package";
 import { Purchase } from "@/models/Purchase";
 import { PaymentInstructions } from "@/components/packages/PaymentInstructions";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "My Membership" };
-
-function daysRemaining(from: Date, years = 2) {
-  const end = new Date(from);
-  end.setFullYear(end.getFullYear() + years);
-  return Math.max(0, Math.ceil((end.getTime() - Date.now()) / 86400000));
-}
-
-function validTillLabel(from: Date, years = 2) {
-  const end = new Date(from);
-  end.setFullYear(end.getFullYear() + years);
-  return end.toLocaleDateString("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-}
 
 export default async function MembershipPage() {
   const session = await getMemberSession();
@@ -50,10 +35,12 @@ export default async function MembershipPage() {
     | null
     | undefined;
 
-  const startDate =
-    purchase?.approvedAt || purchase?.createdAt || new Date();
-  const left = purchase ? daysRemaining(new Date(startDate)) : 0;
-  const till = purchase ? validTillLabel(new Date(startDate)) : null;
+  const { daysLeft: left, validTill: till } = getMembershipValidity({
+    status: purchase?.status,
+    approvedAt: purchase?.approvedAt,
+    createdAt: purchase?.createdAt,
+    validity: pkg?.validity,
+  });
   const currentTitle = pkg?.title || null;
   const currentId = pkg?._id ? String(pkg._id) : null;
   const isActive = purchase?.status === "active";

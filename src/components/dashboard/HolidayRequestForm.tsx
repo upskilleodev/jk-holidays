@@ -116,12 +116,12 @@ export function HolidayRequestForm() {
   const [destination, setDestination] = useState(
     preset && destOptions.includes(preset) ? preset : destOptions[0] || "Goa",
   );
-  const [resort, setResort] = useState("Taj Holiday Resort, Goa");
-  const [checkIn, setCheckIn] = useState("2026-06-15");
-  const [checkOut, setCheckOut] = useState("2026-06-19");
+  const [resort, setResort] = useState("");
+  const [checkIn, setCheckIn] = useState("");
+  const [checkOut, setCheckOut] = useState("");
   const [rooms, setRooms] = useState("1 Room");
-  const [arrival, setArrival] = useState("10:00 AM");
-  const [departure, setDeparture] = useState("09:00 AM");
+  const [arrival, setArrival] = useState("");
+  const [departure, setDeparture] = useState("");
   const [airportPickup, setAirportPickup] = useState<"Yes" | "No">("No");
   const [sightseeing, setSightseeing] = useState<"Yes" | "No">("No");
 
@@ -357,7 +357,17 @@ export function HolidayRequestForm() {
             <div className="mt-6 flex justify-end">
               <button
                 type="button"
-                onClick={() => setStep(1)}
+                onClick={() => {
+                  if (!checkIn || !checkOut) {
+                    toast("Select your check-in and check-out dates", "error");
+                    return;
+                  }
+                  if (new Date(checkOut) <= new Date(checkIn)) {
+                    toast("Check-out must be after check-in", "error");
+                    return;
+                  }
+                  setStep(1);
+                }}
                 className="btn-primary"
               >
                 NEXT

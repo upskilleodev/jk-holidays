@@ -26,7 +26,7 @@ import {
 import { Logo } from "@/components/brand/Logo";
 import { ProfileMenu } from "@/components/auth/ProfileMenu";
 import { startNavigation, toast } from "@/components/feedback/toast";
-import { site } from "@/lib/site";
+import { useSiteContact } from "@/components/providers/SiteContactProvider";
 import { cn } from "@/lib/utils";
 
 const nav = [
@@ -43,12 +43,7 @@ const nav = [
   { href: "/dashboard/offers", label: "Offers & Discounts", icon: Tag },
   { href: "/dashboard/support", label: "Travel Support", icon: Headphones },
   { href: "/dashboard/documents", label: "Documents", icon: FileText },
-  {
-    href: "/dashboard/notifications",
-    label: "Notifications",
-    icon: Bell,
-    badge: 3,
-  },
+  { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
   { href: "/dashboard/settings", label: "Settings", icon: Settings },
 ] as const;
 
@@ -56,6 +51,7 @@ type Props = {
   name: string;
   memberId: string;
   referralCode: string;
+  unreadCount?: number;
   children: React.ReactNode;
 };
 
@@ -68,8 +64,10 @@ export function MemberShell({
   name,
   memberId,
   referralCode,
+  unreadCount = 0,
   children,
 }: Props) {
+  const contact = useSiteContact();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -99,7 +97,8 @@ export function MemberShell({
             "exact" in item ? item.exact : false,
           );
           const Icon = item.icon;
-          const badge = "badge" in item ? item.badge : undefined;
+          const badge =
+            item.href === "/dashboard/notifications" ? unreadCount : 0;
           return (
             <Link
               key={item.href}
@@ -166,11 +165,11 @@ export function MemberShell({
           </div>
           <div className="ml-auto flex items-center gap-3 md:gap-5">
             <a
-              href={`tel:${site.phone.replace(/\s/g, "")}`}
+              href={`tel:${contact.phone.replace(/\s/g, "")}`}
               className="hidden items-center gap-2 text-sm md:flex"
             >
               <Phone className="h-4 w-4 text-gold" />
-              {site.phone}
+              {contact.phone}
             </a>
             <Link
               href="/dashboard/support"
@@ -185,9 +184,11 @@ export function MemberShell({
               aria-label="Notifications"
             >
               <Bell className="h-5 w-5" />
-              <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[9px] font-bold">
-                3
-              </span>
+              {unreadCount > 0 ? (
+                <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[9px] font-bold">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              ) : null}
             </Link>
             <ProfileMenu
               name={name}

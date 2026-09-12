@@ -4,7 +4,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { Share2, Star } from "lucide-react";
-import { site } from "@/lib/site";
+import {
+  contactDigits,
+  useSiteContact,
+} from "@/components/providers/SiteContactProvider";
 import { toast } from "@/components/feedback/toast";
 import { cn } from "@/lib/utils";
 
@@ -36,7 +39,7 @@ export function HolidayTripCard({ trip }: { trip: HolidayTrip }) {
   const gallery =
     trip.photos && trip.photos.length > 0 ? trip.photos : [trip.image];
   const [photoIndex, setPhotoIndex] = useState(0);
-  const phone = site.phone.replace(/\D/g, "");
+  const phone = contactDigits(useSiteContact().phone);
   const shareUrl =
     typeof window !== "undefined"
       ? `${window.location.origin}/destinations`

@@ -46,6 +46,8 @@ const UserSchema = new Schema(
       ifsc: { type: String, default: "", trim: true, uppercase: true },
     },
     upiId: { type: String, default: "", trim: true },
+    /** Last time the member opened their notifications feed. */
+    notificationsSeenAt: { type: Date, default: null },
   },
   { timestamps: true }
 );

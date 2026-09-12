@@ -17,9 +17,11 @@ import { connectDB } from "@/lib/db";
 import { getMemberSession } from "@/lib/auth";
 import { formatINR } from "@/lib/utils";
 import { destinations } from "@/lib/site";
+import { getMembershipValidity } from "@/lib/membership";
 import { User } from "@/models/User";
 import { Purchase } from "@/models/Purchase";
 import { CashbackReward } from "@/models/CashbackReward";
+import { HolidayRequest } from "@/models/HolidayRequest";
 import { PortalStatCard } from "@/components/portal/PortalStatCard";
 import { CopyReferralButton } from "@/components/dashboard/CopyReferralButton";
 
@@ -29,31 +31,33 @@ export const metadata = {
   title: "Dashboard",
 };
 
-const recentBookingsDemo = [
-  {
-    dest: "Maldives",
-    nights: "4 Nights / 5 Days",
-    dates: "12–16 Jan 2025",
-    image: "/assets/dest-maldives.jpg",
-  },
-  {
-    dest: "Manali",
-    nights: "3 Nights / 4 Days",
-    dates: "02–05 Nov 2024",
-    image: "/assets/dest-kashmir.jpg",
-  },
-  {
-    dest: "Dubai",
-    nights: "5 Nights / 6 Days",
-    dates: "18–23 Aug 2024",
-    image: "/assets/dest-dubai.jpg",
-  },
-];
+const FALLBACK_IMAGE = "/assets/hero-resort.jpg";
 
-function daysLeft(from: Date, years = 2) {
-  const end = new Date(from);
-  end.setFullYear(end.getFullYear() + years);
-  return Math.max(0, Math.ceil((end.getTime() - Date.now()) / 86400000));
+const bookingStatusStyles: Record<string, string> = {
+  completed: "bg-emerald-100 text-emerald-700",
+  approved: "bg-sky-100 text-sky-700",
+  pending: "bg-amber-100 text-amber-800",
+  rejected: "bg-rose-100 text-rose-700",
+};
+
+const bookingStatusLabels: Record<string, string> = {
+  completed: "Completed",
+  approved: "Confirmed",
+  pending: "Pending",
+  rejected: "Rejected",
+};
+
+function imageForDestination(destination: string) {
+  const match = destinations.find(
+    (d) => d.name.toLowerCase() === destination.trim().toLowerCase(),
+  );
+  return match?.image || FALLBACK_IMAGE;
+}
+
+function shortDate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short" });
 }
 
 export default async function DashboardPage() {
@@ -71,6 +75,32 @@ export default async function DashboardPage() {
     referrerUserId: session.userId,
   }).sort({ createdAt: -1 });
 
+  const recentRequests = await HolidayRequest.find({ userId: session.userId })
+    .sort({ createdAt: -1 })
+    .limit(3)
+    .lean<
+      Array<{
+        _id: { toString(): string };
+        destination: string;
+        checkIn: string;
+        checkOut: string;
+        nightsLabel?: string;
+        status: string;
+      }>
+    >();
+
+  const recentBookings = recentRequests.map((r) => ({
+    id: r._id.toString(),
+    dest: r.destination,
+    nights: r.nightsLabel || "—",
+    dates:
+      r.status === "pending"
+        ? "Awaiting confirmation"
+        : `${shortDate(r.checkIn)} – ${shortDate(r.checkOut)}`,
+    status: r.status,
+    image: imageForDestination(r.destination),
+  }));
+
   const walletBalance = user.referralPoints || 0;
 
   const pkg = purchase?.packageId as
@@ -86,23 +116,25 @@ export default async function DashboardPage() {
     | undefined;
 
   const planName =
-    pkg?.badge ||
-    pkg?.title?.split(" ")[0] ||
-    (purchase ? "Member" : "None");
+    pkg?.badge || pkg?.title?.split(" ")[0] || (purchase ? "Member" : "None");
   const isActive = purchase?.status === "active";
-  const startDate =
-    purchase?.approvedAt || purchase?.createdAt || user.createdAt;
-  const left = purchase ? daysLeft(new Date(startDate)) : 0;
-  const progress = purchase ? Math.max(8, Math.min(92, (left / 730) * 100)) : 0;
-  const validTill = purchase
-    ? new Date(
-        new Date(startDate).setFullYear(new Date(startDate).getFullYear() + 2),
-      ).toLocaleDateString("en-IN", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      })
-    : "—";
+  const isPending = purchase?.status === "pending";
+  const {
+    daysLeft: left,
+    validTill,
+    progress,
+  } = getMembershipValidity({
+    status: purchase?.status,
+    approvedAt: purchase?.approvedAt,
+    createdAt: purchase?.createdAt,
+    validity: pkg?.validity,
+  });
+
+  const validityFoot = isActive
+    ? `Valid Till ${validTill}`
+    : isPending
+      ? "Starts once your plan is activated"
+      : "Choose a membership plan";
 
   return (
     <div className="space-y-6">
@@ -174,9 +206,19 @@ export default async function DashboardPage() {
             </div>
           </div>
           <div className="mt-4 text-xs text-white/70">
-            Valid Till
-            <br />
-            <span className="text-white">{validTill}</span>
+            {isActive ? (
+              <>
+                Valid Till
+                <br />
+                <span className="text-white">{validTill}</span>
+              </>
+            ) : (
+              <span className="text-white/80">
+                {isPending
+                  ? "Validity starts after activation"
+                  : "No active membership"}
+              </span>
+            )}
           </div>
           <Link
             href="/dashboard/membership"
@@ -190,10 +232,10 @@ export default async function DashboardPage() {
           icon={Calendar}
           tone="blue"
           title="Membership Validity"
-          value={purchase ? String(left) : "—"}
-          sub="Days Left"
-          foot={purchase ? `Valid Till ${validTill}` : "Choose a membership plan"}
-          progress={purchase ? progress : 0}
+          value={isActive ? String(left) : "—"}
+          sub={isActive ? "Days Left" : "Not active yet"}
+          foot={validityFoot}
+          progress={isActive ? progress : 0}
         />
         <PortalStatCard
           icon={Briefcase}
@@ -201,9 +243,13 @@ export default async function DashboardPage() {
           title="Available Holiday"
           value={isActive ? "1" : "0"}
           sub="Trip Left"
-          foot={pkg?.duration || "Activate membership to unlock"}
-          cta="BOOK NOW"
-          ctaHref="/dashboard/request"
+          foot={
+            isActive
+              ? pkg?.duration || undefined
+              : "Activate membership to unlock"
+          }
+          cta={isActive ? "BOOK NOW" : "VIEW PLANS"}
+          ctaHref={isActive ? "/dashboard/request" : "/dashboard/membership"}
         />
         <PortalStatCard
           icon={Wallet}
@@ -231,23 +277,33 @@ export default async function DashboardPage() {
             Next Eligible Holiday
           </div>
           <div className="relative -mt-24 p-5">
-            <div className="flex items-center gap-1 text-sm">
-              <MapPin className="h-4 w-4 text-gold" />
-              {pkg?.destination || "Goa, India"}
-            </div>
-            <div className="mt-2 flex flex-wrap gap-3 text-xs text-white/80">
-              <span>{pkg?.duration || "4 Nights / 5 Days"}</span>
-              <span>|</span>
-              <span>2 Guests</span>
-            </div>
-            <div className="mt-1 text-xs text-white/80">
-              Valid Till: {validTill}
-            </div>
+            {isActive ? (
+              <>
+                <div className="flex items-center gap-1 text-sm">
+                  <MapPin className="h-4 w-4 text-gold" />
+                  {pkg?.destination || "Choose from our destinations"}
+                </div>
+                {pkg?.duration ? (
+                  <div className="mt-2 text-xs text-white/80">
+                    {pkg.duration}
+                  </div>
+                ) : null}
+                <div className="mt-1 text-xs text-white/80">
+                  Valid Till: {validTill}
+                </div>
+              </>
+            ) : (
+              <div className="text-sm text-white/85">
+                {purchase?.status === "pending"
+                  ? "Your membership is awaiting activation."
+                  : "Activate a membership plan to unlock your holidays."}
+              </div>
+            )}
             <Link
-              href="/dashboard/resorts"
+              href={isActive ? "/dashboard/resorts" : "/dashboard/membership"}
               className="mt-4 inline-flex h-10 items-center rounded-lg bg-gold-gradient px-5 text-xs font-bold text-navy-deep"
             >
-              EXPLORE RESORTS
+              {isActive ? "EXPLORE RESORTS" : "VIEW PLANS"}
             </Link>
           </div>
         </div>
@@ -264,31 +320,59 @@ export default async function DashboardPage() {
               View All
             </Link>
           </div>
-          <div className="mt-4 space-y-4">
-            {recentBookingsDemo.map((b) => (
-              <div key={b.dest} className="flex items-center gap-4">
-                <Image
-                  src={b.image}
-                  alt={b.dest}
-                  width={80}
-                  height={56}
-                  className="h-14 w-20 rounded-md object-cover"
-                />
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="truncate font-semibold text-navy">
-                      {b.dest}
+          {recentBookings.length === 0 ? (
+            <div className="mt-4 rounded-xl border border-dashed border-border bg-cream/40 p-5 text-center">
+              <p className="text-sm text-muted-foreground">
+                {isActive
+                  ? "You have not requested a holiday yet."
+                  : "Activate your membership to request your first holiday."}
+              </p>
+              <Link
+                href={isActive ? "/dashboard/request" : "/dashboard/membership"}
+                className="mt-3 inline-flex text-sm font-semibold text-blue-600"
+              >
+                {isActive ? "Request Holiday" : "View membership plans"}
+              </Link>
+            </div>
+          ) : (
+            <div className="mt-4 space-y-4">
+              {recentBookings.map((b) => (
+                <div key={b.id} className="flex items-center gap-4">
+                  <Image
+                    src={b.image}
+                    alt={b.dest}
+                    width={80}
+                    height={56}
+                    className="h-14 w-20 rounded-md object-cover"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="truncate font-semibold text-navy">
+                        {b.dest}
+                      </div>
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                          bookingStatusStyles[b.status] ||
+                          bookingStatusStyles.pending
+                        }`}
+                      >
+                        {bookingStatusLabels[b.status] || "Pending"}
+                        {b.status === "completed" || b.status === "approved" ? (
+                          <Check className="h-3 w-3" />
+                        ) : null}
+                      </span>
                     </div>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
-                      Completed <Check className="h-3 w-3" />
-                    </span>
+                    <div className="text-xs text-muted-foreground">
+                      {b.nights}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {b.dates}
+                    </div>
                   </div>
-                  <div className="text-xs text-muted-foreground">{b.nights}</div>
-                  <div className="text-xs text-muted-foreground">{b.dates}</div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
           <Link
             href="/dashboard/bookings"
             className="mt-4 block text-center text-sm font-semibold text-blue-600"

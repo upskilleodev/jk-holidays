@@ -1,10 +1,12 @@
 "use client";
 
-import { site } from "@/lib/site";
+import { useSiteContact } from "@/components/providers/SiteContactProvider";
 import { Reveal } from "@/components/home/Reveal";
 import { ContactForm } from "@/components/contact/ContactForm";
 
 export function ContactSection() {
+  const contact = useSiteContact();
+
   return (
     <section id="contact" className="bg-cream py-8 sm:py-10">
       <div className="container-luxury grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
@@ -17,8 +19,8 @@ export function ContactSection() {
             Membership guidance, destinations, or partnerships — we&apos;re here.
           </p>
           <div className="mt-3 space-y-1 text-sm">
-            <div>{site.email}</div>
-            <div>{site.phone}</div>
+            <div>{contact.email}</div>
+            <div>{contact.phone}</div>
           </div>
         </Reveal>
 

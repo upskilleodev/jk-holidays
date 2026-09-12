@@ -28,7 +28,7 @@ import {
 import { Logo } from "@/components/brand/Logo";
 import { ProfileMenu } from "@/components/auth/ProfileMenu";
 import { startNavigation, toast } from "@/components/feedback/toast";
-import { site } from "@/lib/site";
+import { useSiteContact } from "@/components/providers/SiteContactProvider";
 import { cn } from "@/lib/utils";
 
 type BadgeKey = "requests" | "notifications" | "tickets";
@@ -85,6 +85,7 @@ export function AdminShell({
   badges?: Partial<Record<BadgeKey, number>>;
   children: React.ReactNode;
 }) {
+  const contact = useSiteContact();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -163,11 +164,11 @@ export function AdminShell({
           </div>
           <div className="ml-auto flex items-center gap-3 md:gap-5">
             <a
-              href={`tel:${site.phone.replace(/\s/g, "")}`}
+              href={`tel:${contact.phone.replace(/\s/g, "")}`}
               className="hidden items-center gap-2 text-sm md:flex"
             >
               <Phone className="h-4 w-4 text-gold" />
-              {site.phone}
+              {contact.phone}
             </a>
             <Link
               href="/admin/tickets"

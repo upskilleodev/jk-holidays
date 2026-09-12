@@ -1,6 +1,9 @@
 import { redirect } from "next/navigation";
 import { connectDB } from "@/lib/db";
 import { getMemberSession } from "@/lib/auth";
+import { getSiteContact } from "@/lib/site-settings";
+import { getMemberNotificationCount } from "@/lib/notifications";
+import { SiteContactProvider } from "@/components/providers/SiteContactProvider";
 import { User } from "@/models/User";
 import { MemberShell } from "@/components/dashboard/MemberShell";
 
@@ -23,17 +26,25 @@ export default async function DashboardLayout({
 
   await connectDB();
   const user = await User.findById(session.userId).select(
-    "name email referralCode",
+    "name email referralCode notificationsSeenAt",
   );
   if (!user) redirect("/login?next=/dashboard");
 
+  const [contact, unreadCount] = await Promise.all([
+    getSiteContact(),
+    getMemberNotificationCount(session.userId, user.notificationsSeenAt),
+  ]);
+
   return (
-    <MemberShell
-      name={user.name}
-      memberId={memberIdFrom(user)}
-      referralCode={user.referralCode}
-    >
-      {children}
-    </MemberShell>
+    <SiteContactProvider contact={contact}>
+      <MemberShell
+        name={user.name}
+        memberId={memberIdFrom(user)}
+        referralCode={user.referralCode}
+        unreadCount={unreadCount}
+      >
+        {children}
+      </MemberShell>
+    </SiteContactProvider>
   );
 }

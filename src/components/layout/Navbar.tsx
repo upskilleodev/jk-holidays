@@ -6,7 +6,7 @@ import { ChevronDown, Menu, Phone, X } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { LogoutButton } from "@/components/auth/LogoutButton";
 import { ProfileMenu } from "@/components/auth/ProfileMenu";
-import { site } from "@/lib/site";
+import { useSiteContact } from "@/components/providers/SiteContactProvider";
 
 const links = [
   { href: "/", label: "Home" },
@@ -27,6 +27,7 @@ type Props = {
 };
 
 export function Navbar({ member = null, admin = null }: Props) {
+  const contact = useSiteContact();
   const [open, setOpen] = useState(false);
   const [membershipOpen, setMembershipOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -96,13 +97,13 @@ export function Navbar({ member = null, admin = null }: Props) {
 
           <div className="hidden items-center gap-3 md:flex">
             <a
-              href={`tel:${site.phone.replace(/\s/g, "")}`}
+              href={`tel:${contact.phone.replace(/\s/g, "")}`}
               className="hidden xl:flex items-center gap-2 text-sm"
             >
               <span className="grid h-9 w-9 place-items-center rounded-full border border-gold text-gold">
                 <Phone className="h-4 w-4" />
               </span>
-              {site.phone}
+              {contact.phone}
             </a>
             {member || admin ? (
               <div className="flex items-center gap-2">

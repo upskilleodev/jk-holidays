@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/brand/Logo";
 import { site } from "@/lib/site";
+import { getSiteContact } from "@/lib/site-settings";
 
 const quickLinks = [
   { href: "/about", label: "About Us" },
@@ -53,7 +54,9 @@ function FooterCol({
   );
 }
 
-export function Footer() {
+export async function Footer() {
+  const contact = await getSiteContact();
+
   return (
     <footer className="bg-navy-gradient text-white/80">
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-14 md:grid-cols-2 lg:grid-cols-5">
@@ -82,9 +85,9 @@ export function Footer() {
           <h4 className="mb-4 font-display text-lg text-white">Contact Us</h4>
           <p className="text-sm whitespace-pre-line">{site.address}</p>
           <p className="mt-3 text-sm">
-            {site.phone}
+            {contact.phone}
             <br />
-            {site.email}
+            {contact.email}
           </p>
         </div>
       </div>
